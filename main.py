@@ -18,11 +18,19 @@ while True:
     #Remove noise
     denoised_frame = cv2.GaussianBlur(norm_frame, (5, 5), 0) 
 
+    resized_img = cv2.resize(denoised_frame, (0, 0), fx=0.25, fy=0.25)
+
     # a list of box coordinates, [(top, right, bottom, left), ...]
-    face_locations = face_recognition.face_locations(denoised_frame, model="cnn") 
-    face_encodings = face_recognition.face_encodings(denoised_frame, face_locations)
+    face_locations = face_recognition.face_locations(resized_img, model="cnn") 
+    face_encodings = face_recognition.face_encodings(resized_img, face_locations)
 
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
+        #Scale back up to original size
+        top *= 4
+        right *= 4
+        bottom *= 4
+        left *= 4
+
         matches = face_recognition.compare_faces(known_encodings, face_encoding)
         name = "Unknown"
         if True in matches: 
