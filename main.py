@@ -1,7 +1,7 @@
 import numpy
 import cv2
 import sys
-sys.path.append("/home/pi/.local/pipx/venvs/face_recognition/lib/python3.x/site-packages")
+sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
 
 
