@@ -7,7 +7,7 @@ import face_recognition
 
 image = face_recognition.load_image_file("DSC04401.JPG")
 #video_capture = cv2.VideoCapture(0)
-face_locations = face_recognition.face_locations(image, model="cnn") # a list of box coordinates, [(top, right, bottom, left), ...]
+face_locations = face_recognition.face_locations(image) # a list of box coordinates, [(top, right, bottom, left), ...]
 
 # Convert to BGR for OpenCV (optional, as OpenCV uses BGR format)
 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
