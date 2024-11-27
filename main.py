@@ -73,6 +73,8 @@ cv2.destroyAllWindows()
 
 
 # with multiprocessing
+import sys
+sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
 import cv2
 import os
