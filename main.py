@@ -25,22 +25,22 @@ cv2.destroyAllWindows()
 
 
 video_capture = cv2.VideoCapture(0)
-#process_frame = True
+process_frame = True
 
 # Loop runs indefinitely until KeyboardInterrupt
 while True:
     ret, frame = video_capture.read()
 
     # Process each alternating frame
-    #if process_frame:
+    if process_frame:
 
-    # Resize frame to 1/4 resolution
-    downscaled_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+        # Resize frame to 1/4 resolution
+        downscaled_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
 
-    # Convert image from BGR color (which OpenCV uses) to RGB color (which face_recognition uses)
-    downscaled_frame_rgb = downscaled_frame[:, :, :: -1]
+        # Convert image from BGR color (which OpenCV uses) to RGB color (which face_recognition uses)
+        downscaled_frame_rgb = downscaled_frame[:, :, :: -1]
 
-    #process_frame = not process_frame
+    process_frame = not process_frame
 
     # Identify all faces in the current frame and store its box location
     face_locations = face_recognition.face_locations(downscaled_frame_rgb)
