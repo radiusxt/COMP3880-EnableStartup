@@ -5,7 +5,7 @@ sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site
 import face_recognition
 
 
-image = face_recognition.load_image_file("DSC04401.JPG")
+image = face_recognition.load_image_file("DSC04929.JPG")
 #video_capture = cv2.VideoCapture(0)
 face_locations = face_recognition.face_locations(image) # a list of box coordinates, [(top, right, bottom, left), ...]
 
