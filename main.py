@@ -25,6 +25,7 @@ cv2.destroyAllWindows()
 
 
 video_capture = cv2.VideoCapture(0)
+video_capture.set(cv2.CAP_PROP_FPS, 10)
 process_frame = True
 
 # Loop runs indefinitely until KeyboardInterrupt
@@ -40,27 +41,27 @@ while True:
         # Convert image from BGR color (which OpenCV uses) to RGB color (which face_recognition uses)
         downscaled_frame_rgb = downscaled_frame[:, :, :: -1]
 
+        # Identify all faces in the current frame and store its box location
+        face_locations = face_recognition.face_locations(downscaled_frame_rgb, model="hog")
+
+        # Loop through all identified faces
+        for (top, right, bottom, left) in face_locations:
+            # Upscale the face locations after downscaling the image for processing
+            top *= 4
+            right *= 4
+            bottom *= 4
+            left *= 4
+
+            # Draw a box around the face
+            cv2.rectangle(frame, (left, top), (right, bottom + 50), (255, 255, 0), 3)
+
+            # Draw a label with a name below the face
+            cv2.rectangle(frame, (left, bottom), (right, bottom + 50), (255, 255, 0), cv2.FILLED)
+
+        # Display resulting image
+        cv2.imshow('Video', frame)
+
     process_frame = not process_frame
-
-    # Identify all faces in the current frame and store its box location
-    face_locations = face_recognition.face_locations(downscaled_frame_rgb)
-
-    # Loop through all identified faces
-    for (top, right, bottom, left) in face_locations:
-        # Upscale the face locations after downscaling the image for processing
-        top *= 4
-        right *= 4
-        bottom *= 4
-        left *= 4
-
-        # Draw a box around the face
-        cv2.rectangle(frame, (left, top), (right, bottom + 50), (255, 255, 0), 3)
-
-        # Draw a label with a name below the face
-        cv2.rectangle(frame, (left, bottom), (right, bottom + 50), (255, 255, 0), cv2.FILLED)
-
-    # Display resulting image
-    cv2.imshow('Video', frame)
 
     # Hit 'Q' on the keyboard to stop the program
     if cv2.waitKey(1) & 0xFF == ord('q'):
