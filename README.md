@@ -11,6 +11,21 @@
 
 The faceless attendance application uses OpenCV and face_recognition libraries to detect and identify faces.
 
+# Project Directory Structure
+
+```plaintext
+Project/
+├── README.md
+├── requirements.txt
+├── src/
+│   ├── main.py
+│   └── modules/
+│       ├── face_detector.py
+│       └── face_identifier.py
+└── data/
+
+```
+
 ## Requirement
 | Requirement ID | Category       | Description                                                                                                                                                                  |
 |-----------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
