@@ -6,18 +6,37 @@ import face_recognition
 
 
 class FaceRecApp:
-    def __init__(self, root):
+    def __init__(self, root: tk.Tk):
         self.known_encodings = [] #Temporary list. Represents 'database' of known face encodings
         self.known_names = [] #List of known names
         self._root = root
         self._root.title("Face Recognition App")
+        self._root.geometry("1280x720")
 
         self._video = cv2.VideoCapture(0)
 
-        self._video_label = tk.Label(root, anchor='e')
-        self._video_label.pack()
+        main_frame = tk.Frame(root)
+        main_frame.pack(fill="both", expand=True)
 
-        
+        #Frame for video display
+        video_frame = tk.Frame(main_frame)
+        video_frame.pack(side="left", padx=10, pady=10)
+
+        #Frame for person information
+        info_frame = tk.Frame(main_frame)
+        info_frame.pack(side="right", padx=10, pady=10)
+
+
+        self._video_label = tk.Label(video_frame, anchor='e')
+        self._video_label.pack(side="left", padx=25, pady=25)
+
+        self._name_label = tk.Label(info_frame, text="Name: ______", font=('Arial', 14), anchor='w')
+        self._name_label.pack(fill="x", pady=5)
+        self._age_label = tk.Label(info_frame, text="Age: _____", font=('Arial', 14), anchor='w')
+        self._age_label.pack(fill="x", pady=5)
+        self._position_label = tk.Label(info_frame, text="Position: _____", font=('Arial', 14), anchor='w')
+        self._position_label.pack(pady=5, side="left")
+
 
         self.update_vid()
     
@@ -66,6 +85,6 @@ class FaceRecApp:
 
 if __name__=="__main__":
     root = tk.Tk()
-    root.geometry("1280x720")
+    #root.geometry("1280x720")
     app = FaceRecApp(root)
     root.mainloop()
