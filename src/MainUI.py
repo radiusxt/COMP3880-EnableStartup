@@ -2,6 +2,7 @@ import tkinter as tk
 import cv2
 from PIL import Image, ImageTk
 import face_recognition
+from modules.face_detector import FaceDetector
 
 
 
@@ -9,6 +10,7 @@ class FaceRecApp:
     def __init__(self, root: tk.Tk):
         self.known_encodings = [] #Temporary list. Represents 'database' of known face encodings
         self.known_names = [] #List of known names
+
         self._root = root
         self._root.title("Face Recognition App")
         self._root.geometry("1280x720")
@@ -32,47 +34,39 @@ class FaceRecApp:
 
         self._name_label = tk.Label(info_frame, text="Name: ______", font=('Arial', 14), anchor='w')
         self._name_label.pack(fill="x", pady=5)
+
         self._age_label = tk.Label(info_frame, text="Age: _____", font=('Arial', 14), anchor='w')
         self._age_label.pack(fill="x", pady=5)
+
         self._position_label = tk.Label(info_frame, text="Position: _____", font=('Arial', 14), anchor='w')
         self._position_label.pack(pady=5, side="left")
-
 
         self.update_vid()
     
     def update_vid(self):
         ret, frame = self._video.read()
         if ret:
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) 
-            #Normalize the frame
-            norm_frame = cv2.normalize(rgb_frame, None, 0, 255, cv2.NORM_MINMAX) 
-            #Remove noise
-            denoised_frame = cv2.GaussianBlur(norm_frame, (5, 5), 0) 
+            #Lines 51-63 are just for testing if it can identify my face
+            #Later we will have an existing database of face encodings and names.
+            i = True
+            if i and len(self.known_encodings) < 1:
 
-            resized_img = cv2.resize(denoised_frame, (0, 0), fx=0.25, fy=0.25)
 
-            # a list of box coordinates, [(top, right, bottom, left), ...]
-            face_locations = face_recognition.face_locations(resized_img, model="hog") 
-            face_encodings = face_recognition.face_encodings(resized_img, face_locations)
+                test_image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                test_locations = face_recognition.face_locations(test_image_rgb)
+                print(f"[debug] test_locations: {test_locations}")
 
-            for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
-                #Scale back up to original size
-                top *= 4
-                right *= 4
-                bottom *= 4
-                left *= 4
+                test_encoding = face_recognition.face_encodings(test_image_rgb)
+                if len(test_encoding) > 0:
+                    self.known_encodings.append(test_encoding[0])
+                    self.known_names.append("Sahil")
+                    i = False
 
-                matches = face_recognition.compare_faces(self.known_encodings, face_encoding)
-                name = "Unknown"
-                if True in matches: 
-                    first_match_index = matches.index(True) 
-                    name = self.known_names[first_match_index]
+            face_detector = FaceDetector(frame)
+            preprocessed_frame = face_detector.preprocess_frame(frame)
+            name = face_detector.detect_face(preprocessed_frame, self.known_names, self.known_encodings)
+            self._name_label.config(text=f"Name: {name}")
 
-                cv2.rectangle(frame, (left, top), (right, bottom), (255, 255, 0), 3) #Draws a rectangle around the face
-
-                cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
-                font = cv2.FONT_HERSHEY_DUPLEX
-                cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             img = Image.fromarray(frame)
             img_tk = ImageTk.PhotoImage(image=img)
