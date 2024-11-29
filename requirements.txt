@@ -1,2 +1,3 @@
-tk
+tkinter
+OpenCV
 face-recognition

@@ -4,26 +4,11 @@ import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
 
-
-
-#image = face_recognition.load_image_file("DSC04401.JPG")
 video_capture = cv2.VideoCapture(0)
-
-"""test_image = face_recognition.load_image_file("DSC04401.JPG")
-
-
-test_image_rgb = cv2.cvtColor(test_image, cv2.COLOR_BGR2RGB)
-
-# cv2.imshow("Image", test_image_rgb)
-test_locations = face_recognition.face_locations(test_image)
-print(f"[debug] test_locations: {test_locations}")
-
-test_encoding = face_recognition.face_encodings(test_image_rgb)[0]"""
-
-
 known_encodings = [] #Temporary list. Represents 'database' of known face encodings
 known_names = [] #List of known names
 i = True
+
 while True:
     ret, frame = video_capture.read()
     if i:
@@ -78,18 +63,5 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'): #Quits the program when q is pressed
         break
 
-
 video_capture.release()
 cv2.destroyAllWindows()
-
-# Convert to BGR for OpenCV (optional, as OpenCV uses BGR format)
-#image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
-# Draw rectangles around faces
-
-
-# Display the result
-#cv2.imshow("Image", image)
-#cv2.waitKey(0)
-#video_capture.release()
-#cv2.destroyAllWindows()

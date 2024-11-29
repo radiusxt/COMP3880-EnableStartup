@@ -4,8 +4,6 @@ from PIL import Image, ImageTk
 import face_recognition
 from modules.face_detector import FaceDetector
 
-
-
 class FaceRecApp:
     def __init__(self, root: tk.Tk):
         self.known_encodings = [] #Temporary list. Represents 'database' of known face encodings
@@ -13,7 +11,7 @@ class FaceRecApp:
 
         self._root = root
         self._root.title("Face Recognition App")
-        self._root.geometry("1280x720")
+        self._root.geometry("1920x1080")
 
         self._video = cv2.VideoCapture(0)
 

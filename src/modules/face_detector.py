@@ -1,11 +1,9 @@
-# TODO: Implement Face Detection
 import cv2
 import face_recognition
 
 class FaceDetector:
     def __init__(self, frame):
         self._frame = frame
-
 
     def preprocess_frame(self, frame):
         #Convert BGR to RGB as face_recognition requires RGB
