@@ -1,6 +1,8 @@
 import tkinter as tk
 import cv2
 from PIL import Image, ImageTk
+import sys
+sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
 from modules.face_detector import FaceDetector
 

@@ -10,12 +10,8 @@ External Monitor
 
 # Running the Application
 
-Either 
-    
-    1. Run the program directly from VSCode (Fn + F5).
+Runn directly from VSCode (Fn + F5).
 
-OR
+Run from the command line.
 
-    2. Run from the command line.
-
-        ```python MainUI.py```
+    ```python MainUI.py```
