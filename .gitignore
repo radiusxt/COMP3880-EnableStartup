@@ -2,4 +2,5 @@
 
 .DS_Store
 dlib
+main.py
 __pycache__

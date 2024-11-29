@@ -13,7 +13,7 @@ class FaceRecApp:
 
         self._root = root
         self._root.title("Face Recognition App")
-        self._root.geometry("1920x1080")
+        self._root.geometry("640x480")
 
         self._video = cv2.VideoCapture(0)
 
