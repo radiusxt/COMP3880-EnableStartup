@@ -41,9 +41,10 @@ while True:
         # Display resulting image
         cv2.imshow('Video', frame)
 
+    # Alternate between processing frames
     process_frame = not process_frame
 
-    # Hit 'Q' on the keyboard to stop the program
+    # Hit 'Q' on the keyboard to stop
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
