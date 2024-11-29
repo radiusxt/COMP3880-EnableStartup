@@ -13,7 +13,7 @@ class FaceRecApp:
 
         self._root = root
         self._root.title("Face Recognition App")
-        self._root.geometry("640x480")
+        self._root.geometry("1920x1080")
 
         self._video = cv2.VideoCapture(0)
 
@@ -54,7 +54,7 @@ class FaceRecApp:
 
                 test_image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 test_locations = face_recognition.face_locations(test_image_rgb)
-                print(f"[debug] test_locations: {test_locations}")
+                #print(f"[debug] test_locations: {test_locations}")
 
                 test_encoding = face_recognition.face_encodings(test_image_rgb)
                 if len(test_encoding) > 0:
@@ -73,7 +73,7 @@ class FaceRecApp:
             self._video_label.imgtk = img_tk
             self._video_label.configure(image=img_tk)
         
-        self._root.after(10, self.update_vid)
+        self._root.after(1, self.update_vid)
         pass
 
 

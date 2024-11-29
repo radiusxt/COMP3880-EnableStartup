@@ -8,6 +8,11 @@ Raspberry Pi 4
 USB Webcam  
 External Monitor
 
+# Dependencies Required
+NumPy
+OpenCV
+face_recognition
+
 # Running the Application
 
 Runn directly from VSCode (Fn + F5).
