@@ -8,6 +8,8 @@ sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site
 import face_recognition
 from modules.face_detector import FaceDetector
 
+cv2.ocl.setUseOpenCL(True)
+
 class FaceRecApp:
     def __init__(self, root: tk.Tk):
         self.known_encodings = [] #Temporary list. Represents 'database' of known face encodings
@@ -85,8 +87,7 @@ class FaceRecApp:
             self._video_label.imgtk = img_tk
             self._video_label.configure(image=img_tk)
         
-        self._root.after(10, self.update_vid)
-        pass
+        self._root.after(1, self.update_vid)
 
     def settings_command(self):
         if not self._settings_window:

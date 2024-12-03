@@ -13,9 +13,9 @@ class FaceDetector:
         #Normalize the frame
         norm_frame = cv2.normalize(rgb_frame, None, 0, 255, cv2.NORM_MINMAX) 
         #Remove noise
-        denoised_frame = cv2.GaussianBlur(norm_frame, (5, 5), 0) 
+        #denoised_frame = cv2.GaussianBlur(norm_frame, (5, 5), 0) 
 
-        downscaled_frame = cv2.resize(denoised_frame, (0, 0), fx=0.25, fy=0.25)
+        downscaled_frame = cv2.resize(norm_frame, (0, 0), fx=0.25, fy=0.25)
 
         return downscaled_frame
 
