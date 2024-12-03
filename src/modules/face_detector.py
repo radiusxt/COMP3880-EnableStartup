@@ -2,7 +2,6 @@ import cv2
 import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
-import multiprocessing
 
 class FaceDetector:
     def __init__(self, frame):
@@ -10,14 +9,14 @@ class FaceDetector:
 
     def preprocess_frame(self, frame):
         #Convert BGR to RGB as face_recognition requires RGB
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) 
+        gpu_frame = cv2.UMat(frame)
+        rgb_frame = cv2.cvtColor(gpu_frame, cv2.COLOR_BGR2RGB) 
         #Normalize the frame
         norm_frame = cv2.normalize(rgb_frame, None, 0, 255, cv2.NORM_MINMAX) 
         #Remove noise
         #denoised_frame = cv2.GaussianBlur(norm_frame, (5, 5), 0) 
 
         downscaled_frame = cv2.resize(norm_frame, (0, 0), fx=0.25, fy=0.25)
-
         return downscaled_frame
 
     def detect_face(self, frame, known_names, known_encodings):
@@ -45,5 +44,4 @@ class FaceDetector:
             font = cv2.FONT_HERSHEY_DUPLEX
             cv2.putText(self._frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
 
-        return name 
-        #and return all other attributes we wish to display on the application
+        return name

@@ -22,7 +22,7 @@ class FaceRecApp:
         #The main window for the application
         self._root = root
         self._root.title("Face Recognition App")
-        self._root.geometry("640x480")
+        self._root.geometry("1920x1080")
         
 
         self._video = cv2.VideoCapture(0)
@@ -94,8 +94,6 @@ class FaceRecApp:
                 name = face_detector.detect_face(preprocessed_frame, self.known_names, self.known_encodings)
                 #self._name_label.config(text=f"Name: {name}")
             self.process_frame = not self.process_frame
-            
-            
 
             #Update video label to display the current frame
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -106,7 +104,7 @@ class FaceRecApp:
             self._video_label.configure(image=img_tk)
         
         #Update the video label every 10 milliseconds
-        self._root.after(1, self.update_vid)
+        self._root.after(10, self.update_vid)
 
     def settings_command(self):
         #If the settings window is not already open, open it
@@ -116,7 +114,7 @@ class FaceRecApp:
             #Create a new window to display settings
             self._new_window = tk.Tk()
             self._new_window.title("Settings")
-            self._new_window.geometry("640x480")
+            self._new_window.geometry("1920x1080")
 
             settings_frame = tk.Frame(self._new_window)
             settings_frame.pack(fill="both", expand=True)
@@ -206,8 +204,6 @@ class FaceRecApp:
     def get_file_name(self, name: str) -> str:
         file_name = name + ".jpg"
         return file_name
-
-
 
 if __name__=="__main__":
     root = tk.Tk()
