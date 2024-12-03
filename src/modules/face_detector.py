@@ -9,8 +9,7 @@ class FaceDetector:
 
     def preprocess_frame(self, frame):
         #Convert BGR to RGB as face_recognition requires RGB
-        gpu_frame = cv2.UMat(frame)
-        rgb_frame = cv2.cvtColor(gpu_frame, cv2.COLOR_BGR2RGB) 
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) 
         #Normalize the frame
         norm_frame = cv2.normalize(rgb_frame, None, 0, 255, cv2.NORM_MINMAX) 
         #Remove noise
