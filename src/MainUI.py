@@ -21,28 +21,29 @@ class FaceRecApp:
         self._root = root
         self._root.title("Face Recognition App")
         self._root.geometry("640x480")
+        
 
         self._video = cv2.VideoCapture(0)
 
         #The main frame in the GUI which holds the video and information frames
         main_frame = tk.Frame(root)
-        main_frame.pack(fill="both", expand=True)
+        main_frame.pack(fill="both")
 
         #Frame for video display
         video_frame = tk.Frame(main_frame)
-        video_frame.pack(side="left", padx=10, pady=10)
+        video_frame.pack(side="left")
 
         #Frame for person information
         info_frame = tk.Frame(main_frame)
         info_frame.pack(side="right", padx=10, pady=10)
 
         #Label to display the video feed along with the box around the persons face
-        self._video_label = tk.Label(video_frame, anchor='e')
-        self._video_label.pack(side="left", padx=25, pady=25)
+        self._video_label = tk.Label(video_frame, anchor='w')
+        self._video_label.pack(side="right", padx=5, pady=5)
 
         #Label to display the name of the person
-        self._name_label = tk.Label(info_frame, text="Name: ______", font=('Arial', 14), anchor='w')
-        self._name_label.pack(fill="x", pady=5)
+        self._name_label = tk.Label(video_frame, text="Name: ______", font=('Arial', 14), anchor='s')
+        self._name_label.pack(fill="x", pady=5, side="bottom")
 
         """self._age_label = tk.Label(info_frame, text="Age: _____", font=('Arial', 14), anchor='w')
         self._age_label.pack(fill="x", pady=5)
@@ -52,12 +53,12 @@ class FaceRecApp:
         self._position_label.pack(pady=5, side="left")"""
 
         #Button to open the settings window
-        self._settings_button = tk.Button(self._root, text="Settings", command=self.settings_command)
-        self._settings_button.pack(pady=10, side="bottom")
+        self._settings_button = tk.Button(video_frame, text="Settings", command=self.settings_command)
+        self._settings_button.pack(anchor="nw", side="left")
 
         #Button to close the root window
-        self._close_button = tk.Button(self._root, text="Close", command=self._root.destroy)
-        self._close_button.pack(pady=10, side="bottom")
+        self._close_button = tk.Button(video_frame, text="Close", command=self._root.destroy)
+        self._close_button.pack(anchor="nw", side="left")
 
         self._i = True
         self.process_frame = True
@@ -96,7 +97,8 @@ class FaceRecApp:
 
             #Update video label to display the current frame
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            img = Image.fromarray(frame)
+            frame_resized = cv2.resize(frame, (480, 400), interpolation=cv2.INTER_AREA)
+            img = Image.fromarray(frame_resized)
             img_tk = ImageTk.PhotoImage(image=img)
             self._video_label.imgtk = img_tk
             self._video_label.configure(image=img_tk)
