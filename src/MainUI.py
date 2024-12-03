@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import cv2
 from PIL import Image, ImageTk
+import numpy as np
 import os
 import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
@@ -14,6 +15,8 @@ class FaceRecApp:
     def __init__(self, root: tk.Tk):
         self.known_encodings = [] #List of known face encodings
         self.known_names = [] #List of known names
+
+        self.populate_initial_faces()
 
         self._settings_window = None
         self._add_user_window = None
@@ -62,8 +65,10 @@ class FaceRecApp:
         self._close_button = tk.Button(video_frame, text="Close", command=self._root.destroy)
         self._close_button.pack(anchor="nw", side="left")
 
-        self._i = True
+        #self._i = True
         self.process_frame = True
+
+        self._frame = None
         
 
         self.update_vid()
@@ -71,10 +76,11 @@ class FaceRecApp:
     def update_vid(self):
         ret, frame = self._video.read()
         if ret:
+            self._frame = frame
             #Lines 66-77 are just for testing if it can identify my face
             #Later we will have an existing database of face encodings and names.
             #i = True
-            if self._i and len(self.known_encodings) < 1:
+            """if self._i and len(self.known_encodings) < 1:
 
 
                 test_image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -84,7 +90,7 @@ class FaceRecApp:
                 if len(test_encoding) > 0:
                     self.known_encodings.append(test_encoding[0])
                     self.known_names.append("Sahil")
-                    self._i = False
+                    self._i = False"""
 
             #Preprocess the frame, detect and attempt to recognise the person in frame
             #Display the name in the name label if person is recognised
@@ -99,7 +105,7 @@ class FaceRecApp:
 
             #Update video label to display the current frame
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_resized = cv2.resize(frame, (1280, 720), interpolation=cv2.INTER_AREA)
+            frame_resized = cv2.resize(frame, (1000, 650), interpolation=cv2.INTER_AREA)
             img = Image.fromarray(frame_resized)
             img_tk = ImageTk.PhotoImage(image=img)
             self._video_label.imgtk = img_tk
@@ -139,8 +145,8 @@ class FaceRecApp:
             add_name_label = tk.Label(add_name_frame, text="Name: ", font=('Arial', 10))
             add_name_label.pack(side="left", pady=5)
 
-            add_name_text = tk.Text(add_name_frame, height=1, width= 15)
-            add_name_text.pack(side="left", pady=5)
+            self.add_name_text = tk.Text(add_name_frame, height=1, width= 15)
+            self.add_name_text.pack(side="left", pady=5)
 
             #All widgets required for deleting a user
             delete_label = tk.Label(delete_frame, text="Delete User", font=('Arial', 14), anchor="n")
@@ -160,7 +166,7 @@ class FaceRecApp:
             close_settings.pack(pady=20, side="bottom")
 
             #Button to add a user to the database
-            add_user = tk.Button(add_frame, text="Add User")
+            add_user = tk.Button(add_frame, text="Add User", command=self.add_user_command)
             add_user.pack(side="bottom", anchor="s", padx=10, pady=5)
 
             #Button to delete user from the database
@@ -173,7 +179,29 @@ class FaceRecApp:
 
     def add_user_command(self):
         if not self._add_user_window:
-            pass
+            messagebox.showinfo(title=None, message="Ensure you are standing in front of the camera")
+
+            user_to_add = self.add_name_text.get(1.0, "end-1c")
+            
+            user_image = self._frame
+
+            rgb_frame = cv2.cvtColor(user_image, cv2.COLOR_BGR2RGB)
+            user_encoding = face_recognition.face_encodings(rgb_frame)
+            if len(user_encoding) > 0:
+                self.known_encodings.append(user_encoding[0])
+                self.known_names.append(user_to_add)
+
+                file_name = self.get_file_name(user_to_add)
+                file_path = f"./faces/{file_name}"
+                im = Image.fromarray(rgb_frame)
+                im.save(file_path)
+
+                self.close_settings()
+                messagebox.showinfo(title=None, message=f"Successfully added '{user_to_add}' to database")
+            else:
+                self.close_settings()
+                messagebox.showwarning(title=None, message="Could not detect any face, please try again!")
+                
 
     def del_user_command(self) -> None:
         if not self._delete_user_window:
@@ -192,7 +220,7 @@ class FaceRecApp:
 
                     #Remove the file of the user they entered
                     file_name = self.get_file_name(user_to_delete)
-                    file_path = f"../data/{file_name}"
+                    file_path = f"./faces/{file_name}"
                     os.remove(file_path)
 
                     #Close the settings window and inform user that deletion was successful.
@@ -200,12 +228,28 @@ class FaceRecApp:
                     messagebox.showinfo(title=None, message=f"Successfully deleted user '{user_to_delete}' from Database")
             else:
                 #If person is not in the Database, inform the user and close the settings window
-                user_not_found = messagebox.showerror(title=None, message="User not found!")
                 self.close_settings()
+                user_not_found = messagebox.showerror(title=None, message="User not found!")
+                
 
     def get_file_name(self, name: str) -> str:
         file_name = name + ".jpg"
         return file_name
+
+    def populate_initial_faces(self):
+        directory = r"./faces"
+        for name in os.listdir(directory):
+            #rgb_frame = cv2.cvtColor(name, cv2.COLOR_BGR2RGB)
+            file_path = f"./faces/{name}"
+            img = Image.open(file_path)
+            img_arr = np.asarray(img)
+            encoding = face_recognition.face_encodings(img_arr)
+            if len(encoding) > 0:
+                self.known_encodings.append(encoding[0])
+            
+            file_name_split = name.split('.')
+            user_name = file_name_split[0]
+            self.known_names.append(user_name)
 
 
 
