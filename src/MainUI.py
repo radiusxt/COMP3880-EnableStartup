@@ -8,6 +8,8 @@ sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site
 import face_recognition
 from modules.face_detector import FaceDetector
 
+cv2.ocl.setUseOpenCL(True)
+
 class FaceRecApp:
     def __init__(self, root: tk.Tk):
         self.known_encodings = [] #List of known face encodings
@@ -42,8 +44,8 @@ class FaceRecApp:
         self._video_label.pack(side="right", padx=5, pady=5)
 
         #Label to display the name of the person
-        self._name_label = tk.Label(video_frame, text="Name: ______", font=('Arial', 14), anchor='s')
-        self._name_label.pack(fill="x", pady=5, side="bottom")
+        """self._name_label = tk.Label(video_frame, text="Name: ______", font=('Arial', 14), anchor='s')
+        self._name_label.pack(fill="x", pady=5, side="bottom")"""
 
         """self._age_label = tk.Label(info_frame, text="Age: _____", font=('Arial', 14), anchor='w')
         self._age_label.pack(fill="x", pady=5)
@@ -90,14 +92,14 @@ class FaceRecApp:
             if self.process_frame:
                 preprocessed_frame = face_detector.preprocess_frame(frame)
                 name = face_detector.detect_face(preprocessed_frame, self.known_names, self.known_encodings)
-                self._name_label.config(text=f"Name: {name}")
+                #self._name_label.config(text=f"Name: {name}")
             self.process_frame = not self.process_frame
             
             
 
             #Update video label to display the current frame
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_resized = cv2.resize(frame, (480, 400), interpolation=cv2.INTER_AREA)
+            frame_resized = cv2.resize(frame, (1280, 720), interpolation=cv2.INTER_AREA)
             img = Image.fromarray(frame_resized)
             img_tk = ImageTk.PhotoImage(image=img)
             self._video_label.imgtk = img_tk
