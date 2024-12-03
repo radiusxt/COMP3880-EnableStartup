@@ -28,18 +28,19 @@ class FaceRecApp:
         info_frame = tk.Frame(main_frame)
         info_frame.pack(side="right", padx=10, pady=10)
 
-
         self._video_label = tk.Label(video_frame, anchor='e')
         self._video_label.pack(side="left", padx=25, pady=25)
 
         self._name_label = tk.Label(info_frame, text="Name: ______", font=('Arial', 14), anchor='w')
         self._name_label.pack(fill="x", pady=5)
 
+        """
         self._age_label = tk.Label(info_frame, text="Age: _____", font=('Arial', 14), anchor='w')
         self._age_label.pack(fill="x", pady=5)
 
         self._position_label = tk.Label(info_frame, text="Position: _____", font=('Arial', 14), anchor='w')
         self._position_label.pack(pady=5, side="left")
+        """
 
         self.update_vid()
     

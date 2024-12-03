@@ -15,7 +15,7 @@ face_recognition
 
 # Running the Application
 
-Runn directly from VSCode (Fn + F5).
+Run directly from VSCode (Fn + F5).
 
 Run from the command line.
 
