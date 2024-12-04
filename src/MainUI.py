@@ -7,6 +7,7 @@ import os
 import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
+import multiprocessing
 from modules.face_detector import FaceDetector
 
 cv2.ocl.setUseOpenCL(True)
@@ -30,6 +31,7 @@ class FaceRecApp:
         self._root.geometry("1920x1080")
         
         self._video = cv2.VideoCapture(0)
+        self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
 
         #The main frame in the GUI which holds the video and information frames
         main_frame = tk.Frame(root)
@@ -46,17 +48,6 @@ class FaceRecApp:
         #Label to display the video feed along with the box around the persons face
         self._video_label = tk.Label(video_frame, anchor='w')
         self._video_label.pack(side="right", padx=5, pady=5)
-
-        #Label to display the name of the person
-        """self._name_label = tk.Label(video_frame, text="Name: ______", font=('Arial', 14), anchor='s')
-        self._name_label.pack(fill="x", pady=5, side="bottom")
-
-        self._age_label = tk.Label(info_frame, text="Age: _____", font=('Arial', 14), anchor='w')
-        self._age_label.pack(fill="x", pady=5)
-
-        
-        self._position_label = tk.Label(info_frame, text="Position: _____", font=('Arial', 14), anchor='w')
-        self._position_label.pack(pady=5, side="left")"""
 
         #Button to open the settings window
         self._settings_button = tk.Button(video_frame, text="Settings", command=self.settings_command)
@@ -95,7 +86,7 @@ class FaceRecApp:
             face_detector = FaceDetector(frame)
             if self.process_frame:
                 preprocessed_frame = face_detector.preprocess_frame(frame)
-                name = face_detector.detect_face(preprocessed_frame, self.known_names, self.known_encodings)
+                name = face_detector.detect_face(preprocessed_frame, self.known_names, self.known_encodings, self.pool)
                 #self._name_label.config(text=f"Name: {name}")
             self.process_frame = not self.process_frame
 
@@ -233,10 +224,10 @@ class FaceRecApp:
         return file_name
 
     def populate_initial_faces(self):
-        directory = r"./faces"
+        directory = r"./src/faces"
         for name in os.listdir(directory):
             #rgb_frame = cv2.cvtColor(name, cv2.COLOR_BGR2RGB)
-            file_path = f"./faces/{name}"
+            file_path = f"./src/faces/{name}"
             img = Image.open(file_path)
             img_arr = np.asarray(img)
             encoding = face_recognition.face_encodings(img_arr)
