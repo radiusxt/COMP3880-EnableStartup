@@ -13,8 +13,10 @@ cv2.ocl.setUseOpenCL(True)
 
 class FaceRecApp:
     def __init__(self, root: tk.Tk):
-        self.known_encodings = [] #List of known face encodings
-        self.known_names = [] #List of known names
+        # List of known face encodings
+        self.known_encodings = []
+        # List of known names
+        self.known_names = [] 
 
         self.populate_initial_faces()
 
@@ -27,7 +29,6 @@ class FaceRecApp:
         self._root.title("Face Recognition App")
         self._root.geometry("1920x1080")
         
-
         self._video = cv2.VideoCapture(0)
 
         #The main frame in the GUI which holds the video and information frames
@@ -48,9 +49,9 @@ class FaceRecApp:
 
         #Label to display the name of the person
         """self._name_label = tk.Label(video_frame, text="Name: ______", font=('Arial', 14), anchor='s')
-        self._name_label.pack(fill="x", pady=5, side="bottom")"""
+        self._name_label.pack(fill="x", pady=5, side="bottom")
 
-        """self._age_label = tk.Label(info_frame, text="Age: _____", font=('Arial', 14), anchor='w')
+        self._age_label = tk.Label(info_frame, text="Age: _____", font=('Arial', 14), anchor='w')
         self._age_label.pack(fill="x", pady=5)
 
         
@@ -67,10 +68,7 @@ class FaceRecApp:
 
         #self._i = True
         self.process_frame = True
-
         self._frame = None
-        
-
         self.update_vid()
     
     def update_vid(self):
