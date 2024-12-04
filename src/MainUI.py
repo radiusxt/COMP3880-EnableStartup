@@ -224,10 +224,10 @@ class FaceRecApp:
         return file_name
 
     def populate_initial_faces(self):
-        directory = r"./src/faces"
+        directory = r"./faces"
         for name in os.listdir(directory):
             #rgb_frame = cv2.cvtColor(name, cv2.COLOR_BGR2RGB)
-            file_path = f"./src/faces/{name}"
+            file_path = f"./faces/{name}"
             img = Image.open(file_path)
             img_arr = np.asarray(img)
             encoding = face_recognition.face_encodings(img_arr)
