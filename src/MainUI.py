@@ -8,7 +8,10 @@ import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
 import multiprocessing
+import threading
+import time
 from modules.face_detector import FaceDetector
+from modules.face_identifier import FaceIdentifier
 
 cv2.ocl.setUseOpenCL(True)
 
@@ -19,7 +22,16 @@ class FaceRecApp:
         # List of known names
         self.known_names = [] 
 
-        self.populate_initial_faces()
+        self.face_detector = FaceDetector()
+        self.face_identifier = FaceIdentifier()
+
+        
+
+        #self._frame = None
+        #self._face_frame = None
+        #self._face_location = None
+
+        #self.populate_initial_faces()
 
         self._settings_window = None
         self._add_user_window = None
@@ -28,10 +40,10 @@ class FaceRecApp:
         #The main window for the application
         self._root = root
         self._root.title("Face Recognition App")
-        self._root.geometry("1920x1080")
+        self._root.geometry("1200x600")
         
-        self._video = cv2.VideoCapture(0)
-        self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
+        #self._video = cv2.VideoCapture(0)
+        #self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
 
         #The main frame in the GUI which holds the video and information frames
         main_frame = tk.Frame(root)
@@ -45,9 +57,15 @@ class FaceRecApp:
         info_frame = tk.Frame(main_frame)
         info_frame.pack(side="right", padx=10, pady=10)
 
+        self._name_label = tk.Label(info_frame, text="Name: _____", anchor='s')
+        self._name_label.pack(side="bottom")
+
         #Label to display the video feed along with the box around the persons face
         self._video_label = tk.Label(video_frame, anchor='w')
         self._video_label.pack(side="right", padx=5, pady=5)
+
+        self._face_label = tk.Label(info_frame, anchor='e', text="No close face detected")
+        self._face_label.pack(side="right", padx=5, pady=5)
 
         #Button to open the settings window
         self._settings_button = tk.Button(video_frame, text="Settings", command=self.settings_command)
@@ -57,19 +75,38 @@ class FaceRecApp:
         self._close_button = tk.Button(video_frame, text="Close", command=self._root.destroy)
         self._close_button.pack(anchor="nw", side="left")
 
-        #self._i = True
+        self.face_detected = False
+
+        self.video_thread = threading.Thread(target = self.update_vid)
+        self.video_thread.daemon = True
+        self.video_thread.start()
+
+        self.face_thread = threading.Thread(target = self.update_face_frame)
+        self.face_thread.daemon = True
+        self.face_thread.start()
+
+        self._detected_face_img = None
+
         self.process_frame = True
         self._frame = None
-        self.update_vid()
     
     def update_vid(self):
-        ret, frame = self._video.read()
+        while True:
+            frame, _ = self.face_detector.get_frame()
+            if frame:
+                self._video_label.configure(image=frame)
+                self._video_label.image = frame
+            
+            time.sleep(0.030)
+
+
+        """ret, frame = self._video.read()
         if ret:
             self._frame = frame
             #Lines 66-77 are just for testing if it can identify my face
             #Later we will have an existing database of face encodings and names.
             #i = True
-            """if self._i and len(self.known_encodings) < 1:
+            if self._i and len(self.known_encodings) < 1:
 
 
                 test_image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -79,14 +116,14 @@ class FaceRecApp:
                 if len(test_encoding) > 0:
                     self.known_encodings.append(test_encoding[0])
                     self.known_names.append("Sahil")
-                    self._i = False"""
+                    self._i = False
 
             #Preprocess the frame, detect and attempt to recognise the person in frame
             #Display the name in the name label if person is recognised
             face_detector = FaceDetector(frame)
             if self.process_frame:
                 preprocessed_frame = face_detector.preprocess_frame(frame)
-                name = face_detector.detect_face(preprocessed_frame, self.known_names, self.known_encodings, self.pool)
+                #name = face_detector.detect_face(preprocessed_frame, self.known_names, self.known_encodings, self.pool)
                 #self._name_label.config(text=f"Name: {name}")
             self.process_frame = not self.process_frame
 
@@ -99,7 +136,21 @@ class FaceRecApp:
             self._video_label.configure(image=img_tk)
         
         #Update the video label every 10 milliseconds
-        self._root.after(10, self.update_vid)
+        self._root.after(10, self.update_vid)"""
+
+    def update_face_frame(self):
+        while True:
+            frame, detected_face_frame = self.face_detector.get_frame()
+            if detected_face_frame and not self.face_detected:
+                self._face_label.configure(image=detected_face_frame, text="")
+                self._face_label.image = detected_face_frame
+                self._detected_face_img = detected_face_frame
+                self.face_detected = True
+            elif not detected_face_frame and not self.face_detected:
+                self._face_label.configure(text="No close face detected")
+                self._detected_face_img = None
+            
+            time.sleep(0.1)
 
     def settings_command(self):
         #If the settings window is not already open, open it
@@ -109,7 +160,7 @@ class FaceRecApp:
             #Create a new window to display settings
             self._new_window = tk.Tk()
             self._new_window.title("Settings")
-            self._new_window.geometry("1920x1080")
+            self._new_window.geometry("1200x600")
 
             settings_frame = tk.Frame(self._new_window)
             settings_frame.pack(fill="both", expand=True)
@@ -159,6 +210,14 @@ class FaceRecApp:
             #Button to delete user from the database
             delete_user = tk.Button(delete_frame, text="Delete User", command=self.del_user_command)
             delete_user.pack(side="bottom", anchor="s", padx=10, pady=5)
+
+            """self.detected_face_label = tk.Label(settings_frame, text="No face detected", anchor='s')
+            self.detected_face_label.pack(side="bottom", padx=5, pady=5)
+            if self._detected_face_img:
+                self.detected_face_label.configure(image=self._detected_face_img, text="")
+                self.detected_face_label.image = self._detected_face_img"""
+
+            
     
     def close_settings(self) -> None:
         self._settings_window = False
@@ -227,7 +286,7 @@ class FaceRecApp:
         return file_name
 
     def populate_initial_faces(self):
-        directory = r"./faces"
+        directory = "./faces"
         for name in os.listdir(directory):
             file_path = f"./faces/{name}"
             img = Image.open(file_path)
@@ -244,6 +303,5 @@ class FaceRecApp:
 
 if __name__=="__main__":
     root = tk.Tk()
-    #root.geometry("1280x720")
     app = FaceRecApp(root)
     root.mainloop()
