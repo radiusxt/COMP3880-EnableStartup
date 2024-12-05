@@ -25,12 +25,6 @@ class FaceRecApp:
         self.face_detector = FaceDetector()
         self.face_identifier = FaceIdentifier()
 
-        
-
-        #self._frame = None
-        #self._face_frame = None
-        #self._face_location = None
-
         #self.populate_initial_faces()
 
         self._settings_window = None
@@ -41,9 +35,6 @@ class FaceRecApp:
         self._root = root
         self._root.title("Face Recognition App")
         self._root.geometry("1200x600")
-        
-        #self._video = cv2.VideoCapture(0)
-        #self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
 
         #The main frame in the GUI which holds the video and information frames
         main_frame = tk.Frame(root)
@@ -56,6 +47,12 @@ class FaceRecApp:
         #Frame for person information
         info_frame = tk.Frame(main_frame)
         info_frame.pack(side="right", padx=10, pady=10)
+
+        self._confirm_button = tk.Button(info_frame, text="Confirm", anchor='s', command=self.confirm_command)
+        self._confirm_button.pack(side="right")
+
+        self._cancel_button = tk.Button(info_frame, text="Cancel", anchor='s', command=self.confirm_command)
+        self._cancel_button.pack(side="right")
 
         self._name_label = tk.Label(info_frame, text="Name: _____", anchor='s')
         self._name_label.pack(side="bottom")
@@ -92,7 +89,7 @@ class FaceRecApp:
     
     def update_vid(self):
         while True:
-            frame, _ = self.face_detector.get_frame()
+            frame, _, _ = self.face_detector.get_frame()
             if frame:
                 self._video_label.configure(image=frame)
                 self._video_label.image = frame
@@ -140,12 +137,15 @@ class FaceRecApp:
 
     def update_face_frame(self):
         while True:
-            frame, detected_face_frame = self.face_detector.get_frame()
+            full_frame, detected_face_frame, frame = self.face_detector.get_frame()
             if detected_face_frame and not self.face_detected:
+                self._frame = frame
                 self._face_label.configure(image=detected_face_frame, text="")
                 self._face_label.image = detected_face_frame
                 self._detected_face_img = detected_face_frame
                 self.face_detected = True
+                """name = self.face_identifier.identify_face(self._frame, self.known_encodings, self.known_names)
+                self._name_label.config(text=f"Name: {name}")"""
             elif not detected_face_frame and not self.face_detected:
                 self._face_label.configure(text="No close face detected")
                 self._detected_face_img = None
@@ -210,14 +210,6 @@ class FaceRecApp:
             #Button to delete user from the database
             delete_user = tk.Button(delete_frame, text="Delete User", command=self.del_user_command)
             delete_user.pack(side="bottom", anchor="s", padx=10, pady=5)
-
-            """self.detected_face_label = tk.Label(settings_frame, text="No face detected", anchor='s')
-            self.detected_face_label.pack(side="bottom", padx=5, pady=5)
-            if self._detected_face_img:
-                self.detected_face_label.configure(image=self._detected_face_img, text="")
-                self.detected_face_label.image = self._detected_face_img"""
-
-            
     
     def close_settings(self) -> None:
         self._settings_window = False
@@ -233,6 +225,7 @@ class FaceRecApp:
                 messagebox.showwarning(title=None, message="User already exists in database!")
             
             user_image = self._frame
+            #user_image = self._detected_face_img
 
             rgb_frame = cv2.cvtColor(user_image, cv2.COLOR_BGR2RGB)
             user_encoding = face_recognition.face_encodings(rgb_frame)
@@ -280,6 +273,10 @@ class FaceRecApp:
                 self.close_settings()
                 user_not_found = messagebox.showerror(title=None, message="User not found!")
                 
+
+    def confirm_command(self):
+        self.face_detected = False
+        self._face_label.configure(image="", text="No close face detected")
 
     def get_file_name(self, name: str) -> str:
         file_name = name + ".jpg"

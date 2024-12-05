@@ -5,8 +5,8 @@ class FaceIdentifier:
     def __init__(self):
         pass
 
-    def identify_face(self, frame, location, known_encodings, known_names):
-        encoding = face_recognition.face_encodings(frame, location)
+    def identify_face(self, frame, known_encodings, known_names):
+        encoding = face_recognition.face_encodings(frame)
         matches = face_recognition.compare_faces(known_encodings, encoding)
         name = "unknown"
         if True in matches:

@@ -17,7 +17,7 @@ class FaceDetector:
         
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-        self.min_face_size = 200
+        self.min_face_size = 150
 
         self.face_detected = False
         self.face_frame = None
@@ -41,7 +41,7 @@ class FaceDetector:
             if current_time - self.last_detection_time > 0:
                 self.face_detected = False
                 full_frame, face_frame = self.preprocess_frame(frame)
-                return full_frame, face_frame
+                return full_frame, face_frame, frame
         
         gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) 
         faces = self.face_cascade.detectMultiScale(gray_img, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
@@ -52,7 +52,7 @@ class FaceDetector:
                 self.last_detection_time = time.time()  # Record the time of detection
                 self.face_detected = True
 
-        return ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))), None
+        return ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))), None, None
     
     def release(self):
         self.video.release()
