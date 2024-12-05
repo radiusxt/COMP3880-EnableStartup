@@ -182,6 +182,9 @@ class FaceRecApp:
             messagebox.showinfo(title=None, message="Ensure you are standing in front of the camera")
 
             user_to_add = self.add_name_text.get(1.0, "end-1c")
+            if user_to_add in self.known_names:
+                self.close_settings()
+                messagebox.showwarning(title=None, message="User already exists in database!")
             
             user_image = self._frame
 
@@ -239,7 +242,6 @@ class FaceRecApp:
     def populate_initial_faces(self):
         directory = r"./faces"
         for name in os.listdir(directory):
-            #rgb_frame = cv2.cvtColor(name, cv2.COLOR_BGR2RGB)
             file_path = f"./faces/{name}"
             img = Image.open(file_path)
             img_arr = np.asarray(img)
