@@ -7,14 +7,17 @@ import os
 import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
+import multiprocessing
 from modules.face_detector import FaceDetector
 
 cv2.ocl.setUseOpenCL(True)
 
 class FaceRecApp:
     def __init__(self, root: tk.Tk):
-        self.known_encodings = [] #List of known face encodings
-        self.known_names = [] #List of known names
+        # List of known face encodings
+        self.known_encodings = []
+        # List of known names
+        self.known_names = [] 
 
         self.populate_initial_faces()
 
@@ -25,10 +28,10 @@ class FaceRecApp:
         #The main window for the application
         self._root = root
         self._root.title("Face Recognition App")
-        self._root.geometry("640x480")
+        self._root.geometry("1920x1080")
         
-
         self._video = cv2.VideoCapture(0)
+        self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
 
         #The main frame in the GUI which holds the video and information frames
         main_frame = tk.Frame(root)
@@ -46,17 +49,6 @@ class FaceRecApp:
         self._video_label = tk.Label(video_frame, anchor='w')
         self._video_label.pack(side="right", padx=5, pady=5)
 
-        #Label to display the name of the person
-        """self._name_label = tk.Label(video_frame, text="Name: ______", font=('Arial', 14), anchor='s')
-        self._name_label.pack(fill="x", pady=5, side="bottom")"""
-
-        """self._age_label = tk.Label(info_frame, text="Age: _____", font=('Arial', 14), anchor='w')
-        self._age_label.pack(fill="x", pady=5)
-
-        
-        self._position_label = tk.Label(info_frame, text="Position: _____", font=('Arial', 14), anchor='w')
-        self._position_label.pack(pady=5, side="left")"""
-
         #Button to open the settings window
         self._settings_button = tk.Button(video_frame, text="Settings", command=self.settings_command)
         self._settings_button.pack(anchor="nw", side="left")
@@ -67,10 +59,7 @@ class FaceRecApp:
 
         #self._i = True
         self.process_frame = True
-
         self._frame = None
-        
-
         self.update_vid()
     
     def update_vid(self):
@@ -97,11 +86,9 @@ class FaceRecApp:
             face_detector = FaceDetector(frame)
             if self.process_frame:
                 preprocessed_frame = face_detector.preprocess_frame(frame)
-                name = face_detector.detect_face(preprocessed_frame, self.known_names, self.known_encodings)
+                name = face_detector.detect_face(preprocessed_frame, self.known_names, self.known_encodings, self.pool)
                 #self._name_label.config(text=f"Name: {name}")
             self.process_frame = not self.process_frame
-            
-            
 
             #Update video label to display the current frame
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -112,7 +99,7 @@ class FaceRecApp:
             self._video_label.configure(image=img_tk)
         
         #Update the video label every 10 milliseconds
-        self._root.after(1, self.update_vid)
+        self._root.after(10, self.update_vid)
 
     def settings_command(self):
         #If the settings window is not already open, open it
@@ -122,7 +109,7 @@ class FaceRecApp:
             #Create a new window to display settings
             self._new_window = tk.Tk()
             self._new_window.title("Settings")
-            self._new_window.geometry("640x480")
+            self._new_window.geometry("1920x1080")
 
             settings_frame = tk.Frame(self._new_window)
             settings_frame.pack(fill="both", expand=True)
