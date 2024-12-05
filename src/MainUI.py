@@ -83,13 +83,14 @@ class FaceRecApp:
         self.face_thread.start()
 
         self._detected_face_img = None
+        self._face_frame_arr = None
 
         self.process_frame = True
         self._frame = None
     
     def update_vid(self):
         while True:
-            frame, _, _ = self.face_detector.get_frame()
+            frame, _, _, _, _ = self.face_detector.get_frame()
             if frame:
                 self._video_label.configure(image=frame)
                 self._video_label.image = frame
@@ -137,15 +138,17 @@ class FaceRecApp:
 
     def update_face_frame(self):
         while True:
-            full_frame, detected_face_frame, frame = self.face_detector.get_frame()
+            full_frame, detected_face_frame, frame, face_locations, face_frame_arr = self.face_detector.get_frame()
             if detected_face_frame and not self.face_detected:
                 self._frame = frame
                 self._face_label.configure(image=detected_face_frame, text="")
                 self._face_label.image = detected_face_frame
                 self._detected_face_img = detected_face_frame
+                self._face_frame_arr = face_frame_arr
                 self.face_detected = True
-                """name = self.face_identifier.identify_face(self._frame, self.known_encodings, self.known_names)
-                self._name_label.config(text=f"Name: {name}")"""
+
+                # name = self.face_identifier.identify_face(self._detected_face_img, face_locations, self.known_encodings, self.known_names)
+                # self._name_label.config(text=f"Name: {name}")
             elif not detected_face_frame and not self.face_detected:
                 self._face_label.configure(text="No close face detected")
                 self._detected_face_img = None
@@ -224,7 +227,8 @@ class FaceRecApp:
                 self.close_settings()
                 messagebox.showwarning(title=None, message="User already exists in database!")
             
-            user_image = self._frame
+            #user_image = self._frame
+            user_image = self._face_frame_arr
             #user_image = self._detected_face_img
 
             rgb_frame = cv2.cvtColor(user_image, cv2.COLOR_BGR2RGB)

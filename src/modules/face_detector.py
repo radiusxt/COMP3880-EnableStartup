@@ -22,6 +22,7 @@ class FaceDetector:
         self.face_detected = False
         self.face_frame = None
         self.last_detection_time = 0
+        self.face_locations = []
 
     def preprocess_frame(self, frame):
         rgb_frame = cv2.cvtColor(self.face_frame, cv2.COLOR_BGR2RGB)
@@ -41,7 +42,7 @@ class FaceDetector:
             if current_time - self.last_detection_time > 0:
                 self.face_detected = False
                 full_frame, face_frame = self.preprocess_frame(frame)
-                return full_frame, face_frame, frame
+                return full_frame, face_frame, frame, self.face_locations, self.face_frame
         
         gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) 
         faces = self.face_cascade.detectMultiScale(gray_img, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
@@ -50,9 +51,11 @@ class FaceDetector:
             if w > self.min_face_size and h > self.min_face_size:  # Check if the face is close
                 self.face_frame = frame[y:y+h, x:x+w]  # Save the detected face
                 self.last_detection_time = time.time()  # Record the time of detection
+                self.face_locations.append((y, x + w, y + h, x))
                 self.face_detected = True
 
-        return ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))), None, None
+
+        return ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))), None, None, self.face_locations, None
     
     def release(self):
         self.video.release()
