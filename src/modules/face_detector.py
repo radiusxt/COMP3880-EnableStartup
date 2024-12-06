@@ -32,14 +32,14 @@ class FaceDetector:
     
     def get_frame(self):
         ret, frame = self.video.read()
-        frame = cv2.resize(frame, (640, 480))
+        # frame = cv2.resize(frame, (640, 480))
 
         if not ret:
             return None, None, None, None, None
         
         if self.face_detected:
             current_time = time.time()
-            
+
             if current_time - self.last_detection_time > 0:
                 self.face_detected = False
                 full_frame, face_frame = self.preprocess_frame(frame)
