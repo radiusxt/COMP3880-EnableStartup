@@ -9,8 +9,7 @@ cv2.ocl.setUseOpenCL(True)
 
 class FaceDetector:
     def __init__(self):
-        #Initialise the cv2 video capture in here
-
+        # Initialise cv2 video capture
         self.video = cv2.VideoCapture(0)
         if not self.video.isOpened():
             raise Exception("Unable to access video feed!")
@@ -30,15 +29,17 @@ class FaceDetector:
         face_tk = ImageTk.PhotoImage(image=face_img)
 
         return ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))), face_tk
-
     
     def get_frame(self):
         ret, frame = self.video.read()
         frame = cv2.resize(frame, (640, 480))
+
         if not ret:
-            return None, None
+            return None, None, None, None, None
+        
         if self.face_detected:
             current_time = time.time()
+            
             if current_time - self.last_detection_time > 0:
                 self.face_detected = False
                 full_frame, face_frame = self.preprocess_frame(frame)
@@ -53,7 +54,6 @@ class FaceDetector:
                 self.last_detection_time = time.time()  # Record the time of detection
                 self.face_locations.append((y, x + w, y + h, x))
                 self.face_detected = True
-
 
         return ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))), None, None, self.face_locations, None
     

@@ -7,7 +7,6 @@ import os
 import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
-import multiprocessing
 import threading
 import time
 from modules.face_detector import FaceDetector
@@ -19,13 +18,12 @@ class FaceRecApp:
     def __init__(self, root: tk.Tk):
         # List of known face encodings
         self.known_encodings = []
+
         # List of known names
         self.known_names = [] 
 
         self.face_detector = FaceDetector()
         self.face_identifier = FaceIdentifier()
-
-        #self.populate_initial_faces()
 
         self._settings_window = None
         self._add_user_window = None
@@ -96,45 +94,6 @@ class FaceRecApp:
                 self._video_label.image = frame
             
             time.sleep(0.030)
-
-
-        """ret, frame = self._video.read()
-        if ret:
-            self._frame = frame
-            #Lines 66-77 are just for testing if it can identify my face
-            #Later we will have an existing database of face encodings and names.
-            #i = True
-            if self._i and len(self.known_encodings) < 1:
-
-
-                test_image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                #test_locations = face_recognition.face_locations(test_image_rgb)
-
-                test_encoding = face_recognition.face_encodings(test_image_rgb)
-                if len(test_encoding) > 0:
-                    self.known_encodings.append(test_encoding[0])
-                    self.known_names.append("Sahil")
-                    self._i = False
-
-            #Preprocess the frame, detect and attempt to recognise the person in frame
-            #Display the name in the name label if person is recognised
-            face_detector = FaceDetector(frame)
-            if self.process_frame:
-                preprocessed_frame = face_detector.preprocess_frame(frame)
-                #name = face_detector.detect_face(preprocessed_frame, self.known_names, self.known_encodings, self.pool)
-                #self._name_label.config(text=f"Name: {name}")
-            self.process_frame = not self.process_frame
-
-            #Update video label to display the current frame
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_resized = cv2.resize(frame, (1000, 650), interpolation=cv2.INTER_AREA)
-            img = Image.fromarray(frame_resized)
-            img_tk = ImageTk.PhotoImage(image=img)
-            self._video_label.imgtk = img_tk
-            self._video_label.configure(image=img_tk)
-        
-        #Update the video label every 10 milliseconds
-        self._root.after(10, self.update_vid)"""
 
     def update_face_frame(self):
         while True:
@@ -227,10 +186,7 @@ class FaceRecApp:
                 self.close_settings()
                 messagebox.showwarning(title=None, message="User already exists in database!")
             
-            #user_image = self._frame
             user_image = self._face_frame_arr
-            #user_image = self._detected_face_img
-
             rgb_frame = cv2.cvtColor(user_image, cv2.COLOR_BGR2RGB)
             user_encoding = face_recognition.face_encodings(rgb_frame)
             if len(user_encoding) > 0:
@@ -248,36 +204,34 @@ class FaceRecApp:
                 self.close_settings()
                 messagebox.showwarning(title=None, message="Could not detect any face, please try again!")
                 
-
     def del_user_command(self) -> None:
         if not self._delete_user_window:
-            #Check if user exists
+            # Check if a user exists
             user_to_delete = self.delete_name_text.get(1.0, "end-1c")
 
             if user_to_delete in self.known_names:
-                confirm_delete = messagebox.askyesno(title=None, message="Are you sure you "
-                                                    "want to remove this user from the database?")
+                confirm_delete = messagebox.askyesno(title=None,
+                        message="Are you sure you want to remove this user from the database?")
                 user_index = self.known_names.index(user_to_delete)
 
                 if confirm_delete:
-                    #Remove the name and face encoding from the list of known names and encodings
+                    # Remove the name and face encoding from the list of known names and encodings
                     self.known_names.pop(user_index)
                     self.known_encodings.pop(user_index)
 
-                    #Remove the file of the user they entered
+                    # Remove the file of the user they entered
                     file_name = self.get_file_name(user_to_delete)
                     file_path = f"./faces/{file_name}"
                     os.remove(file_path)
 
-                    #Close the settings window and inform user that deletion was successful.
+                    # Close the settings window and inform user that deletion was successful
                     self.close_settings()
                     messagebox.showinfo(title=None, message=f"Successfully deleted user '{user_to_delete}' from Database")
             else:
-                #If person is not in the Database, inform the user and close the settings window
+                # If person is not in the database, inform the user and close the settings window
                 self.close_settings()
                 user_not_found = messagebox.showerror(title=None, message="User not found!")
                 
-
     def confirm_command(self):
         self.face_detected = False
         self._face_label.configure(image="", text="No close face detected")
@@ -299,8 +253,6 @@ class FaceRecApp:
             file_name_split = name.split('.')
             user_name = file_name_split[0]
             self.known_names.append(user_name)
-
-
 
 if __name__=="__main__":
     root = tk.Tk()
