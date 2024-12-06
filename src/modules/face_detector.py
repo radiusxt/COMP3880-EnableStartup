@@ -43,7 +43,7 @@ class FaceDetector:
             if current_time - self.last_detection_time > 0:
                 self.face_detected = False
                 full_frame, face_frame = self.preprocess_frame(frame)
-                return full_frame, face_frame, frame, self.face_locations, self.face_frame
+                return (full_frame, face_frame, frame, self.face_locations, self.face_frame)
         
         gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) 
         faces = self.face_cascade.detectMultiScale(gray_img, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))

@@ -46,21 +46,30 @@ class FaceRecApp:
         info_frame = tk.Frame(main_frame)
         info_frame.pack(side="right", padx=10, pady=10)
 
-        self._confirm_button = tk.Button(info_frame, text="Confirm", anchor='s', command=self.confirm_command)
-        self._confirm_button.pack(side="right")
+        self._face_label = tk.Label(info_frame, anchor='n', text="No close face detected")
+        self._face_label.pack(side="top", padx=5, pady=5)
 
-        self._cancel_button = tk.Button(info_frame, text="Cancel", anchor='s', command=self.confirm_command)
+        self._name_label = tk.Label(info_frame, text="Name: _____", anchor='n')
+        self._name_label.pack(side="top")
+
+        buttons_frame = tk.Frame(info_frame)
+        buttons_frame.pack(side="bottom")
+
+        self._cancel_button = tk.Button(buttons_frame, text="Cancel", anchor='s', command=self.confirm_command)
         self._cancel_button.pack(side="right")
 
-        self._name_label = tk.Label(info_frame, text="Name: _____", anchor='s')
-        self._name_label.pack(side="bottom")
+        self._confirm_button = tk.Button(buttons_frame, text="Confirm", anchor='s', command=self.confirm_command)
+        self._confirm_button.pack(side="right")
+
+        
+
+        
 
         #Label to display the video feed along with the box around the persons face
         self._video_label = tk.Label(video_frame, anchor='w')
         self._video_label.pack(side="right", padx=5, pady=5)
 
-        self._face_label = tk.Label(info_frame, anchor='e', text="No close face detected")
-        self._face_label.pack(side="right", padx=5, pady=5)
+        
 
         #Button to open the settings window
         self._settings_button = tk.Button(video_frame, text="Settings", command=self.settings_command)
