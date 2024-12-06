@@ -1,7 +1,6 @@
 import cv2
 import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
-import face_recognition
 import time
 from PIL import Image, ImageTk
 
@@ -16,7 +15,7 @@ class FaceDetector:
         
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-        self.min_face_size = 150
+        self.min_face_size = 100
 
         self.face_detected = False
         self.face_frame = None
@@ -32,6 +31,8 @@ class FaceDetector:
     
     def get_frame(self):
         ret, frame = self.video.read()
+
+        # Uncomment the line below when running on a local machine
         # frame = cv2.resize(frame, (640, 480))
 
         if not ret:

@@ -2,5 +2,6 @@
 
 .DS_Store
 dlib
+edgeface
 main.py
 __pycache__

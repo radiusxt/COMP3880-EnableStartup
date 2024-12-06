@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import cv2
-from PIL import Image, ImageTk
+from PIL import Image
 import numpy as np
 import os
 import sys
@@ -16,33 +16,30 @@ cv2.ocl.setUseOpenCL(True)
 
 class FaceRecApp:
     def __init__(self, root: tk.Tk):
-        # List of known face encodings
+        # List of known face encodings and names
         self.known_encodings = []
-
-        # List of known names
         self.known_names = [] 
 
         self.face_detector = FaceDetector()
         self.face_identifier = FaceIdentifier()
-
         self._settings_window = None
         self._add_user_window = None
         self._delete_user_window = None
 
-        #The main window for the application
+        # The main window for the application
         self._root = root
         self._root.title("Face Recognition App")
         self._root.geometry("1200x600")
 
-        #The main frame in the GUI which holds the video and information frames
+        # The main frame in the GUI which holds the video and information frames
         main_frame = tk.Frame(root)
         main_frame.pack(fill="both")
 
-        #Frame for video display
+        # Frame for video display
         video_frame = tk.Frame(main_frame)
         video_frame.pack(side="left")
 
-        #Frame for person information
+        # Frame for person information
         info_frame = tk.Frame(main_frame)
         info_frame.pack(side="right", padx=10, pady=10)
 
@@ -61,21 +58,15 @@ class FaceRecApp:
         self._confirm_button = tk.Button(buttons_frame, text="Confirm", anchor='s', command=self.confirm_command)
         self._confirm_button.pack(side="right")
 
-        
-
-        
-
-        #Label to display the video feed along with the box around the persons face
+        # Label to display the video feed along with the box around the persons face
         self._video_label = tk.Label(video_frame, anchor='w')
         self._video_label.pack(side="right", padx=5, pady=5)
 
-        
-
-        #Button to open the settings window
+        # Button to open the settings window
         self._settings_button = tk.Button(video_frame, text="Settings", command=self.settings_command)
         self._settings_button.pack(anchor="nw", side="left")
 
-        #Button to close the root window
+        # Button to close the root window
         self._close_button = tk.Button(video_frame, text="Close", command=self._root.destroy)
         self._close_button.pack(anchor="nw", side="left")
 
@@ -115,8 +106,8 @@ class FaceRecApp:
                 self._face_frame_arr = face_frame_arr
                 self.face_detected = True
 
-                # name = self.face_identifier.identify_face(self._detected_face_img, face_locations, self.known_encodings, self.known_names)
-                # self._name_label.config(text=f"Name: {name}")
+                name = self.face_identifier.identify_face(self._detected_face_img, face_locations, self.known_encodings, self.known_names)
+                self._name_label.config(text=f"Name: {name}")
             elif not detected_face_frame and not self.face_detected:
                 self._face_label.configure(text="No close face detected")
                 self._detected_face_img = None
