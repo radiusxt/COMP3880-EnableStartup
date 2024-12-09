@@ -10,34 +10,43 @@ import face_recognition
 import threading
 import time
 from modules.face_detector import FaceDetector
-from modules.face_identifier import FaceIdentifier
+#from modules.face_identifier import FaceIdentifier
+from SettingsUI import SettingsUI
 
 cv2.ocl.setUseOpenCL(True)
 
-class FaceRecApp:
-    def __init__(self, root: tk.Tk):
+class FaceRecApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
         # List of known face encodings and names
         self.known_encodings = []
         self.known_names = [] 
 
+        # List containing tuples of name and file name of users in DB
+        self.data = []
+
+        # List containing tuples of widgets in the settings table
+        self.settings_rows = []
+
         self.populate_initial_faces()
 
         self.face_detector = FaceDetector()
-        self.face_identifier = FaceIdentifier()
+        #self.face_identifier = FaceIdentifier()
 
         # Variables to keep track of whether the respective windows are open
         self._settings_window = False
+        self.settings = None
         self._add_user_window = None
         self._delete_user_window = None
 
         # The main window for the application
-        self._root = root
-        self._root.title("Face Recognition App")
-        self._root.geometry("1200x600")
-        self._root.configure(bg="#3c3d3c")
+        # self._root = root
+        self.title("Face Recognition App")
+        self.geometry("1200x600")
+        self.configure(bg="#3c3d3c")
 
         # The main frame in the GUI which holds the video and information frames
-        main_frame = tk.Frame(root, bg="#3c3d3c")
+        main_frame = tk.Frame(self, bg="#3c3d3c")
         main_frame.pack(fill="both", anchor="center")
 
         # Frame for video display
@@ -64,19 +73,19 @@ class FaceRecApp:
         confirm_frame.pack(side="bottom")
 
         # Button to clear face frame 
-        self._cancel_button = tk.Button(confirm_frame, text="Cancel", anchor='s', command=self.confirm_command, width=15, font=("Arial", 10, "bold"))
+        self._cancel_button = tk.Button(confirm_frame, text="Cancel", fg="white", bg="#001314", anchor='s', command=self.confirm_command, width=15, font=("Arial", 10, "bold"))
         self._cancel_button.pack(side="right", padx=25)
 
         # Button to confirm that detected face and displayed name are correct
-        self._confirm_button = tk.Button(confirm_frame, text="Confirm", anchor='s', command=self.confirm_command, width=15, font=("Arial", 10, "bold"))
+        self._confirm_button = tk.Button(confirm_frame, text="Confirm", fg="white", bg="#001314", anchor='s', command=self.confirm_command, width=15, font=("Arial", 10, "bold"))
         self._confirm_button.pack(side="right", padx=25)
 
         # Button to clear face frame 
-        self._quit_button = tk.Button(buttons_frame, text="Quit", anchor='s', command=self._root.destroy, width=15, font=("Arial", 10, "bold"))
+        self._quit_button = tk.Button(buttons_frame, text="Quit", fg="white", bg="#001314", anchor='s', command=self.quit_command, width=15, font=("Arial", 10, "bold"))
         self._quit_button.pack(side="right", padx=25)
 
         # Button to open the settings window
-        self._settings_button = tk.Button(buttons_frame, text="Settings", command=self.settings_command, width=15, font=("Arial", 10, "bold"))
+        self._settings_button = tk.Button(buttons_frame, text="Settings", fg="white", bg="#001314", command=self.settings_command, width=15, font=("Arial", 10, "bold"))
         self._settings_button.pack(side="right", padx=25)
 
         # Label to display the video feed along with the box around the persons face
@@ -101,6 +110,10 @@ class FaceRecApp:
 
         self._frame = None
         
+    def quit_command(self) -> None:
+        """if self._settings_window:
+            self._new_window.destroy()"""
+        self.destroy()
     
     def update_vid(self) -> None:
         """Updates the video label with the frame read from the webcam."""
@@ -147,69 +160,9 @@ class FaceRecApp:
         # If the settings window is not already open, open it
         if not self._settings_window:
             self._settings_window = True
+            self.settings = SettingsUI(self, [], self.known_names, self.known_encodings, self.data)
 
-            # Create a new window to display settings
-            self._new_window = tk.Tk()
-            self._new_window.title("Settings")
-            self._new_window.geometry("1200x600")
-            self._new_window.configure(bg="#3c3d3c")
 
-            # Button to close the settings window
-            close_settings = tk.Button(self._new_window, text="Close", command=self.close_settings)
-            close_settings.pack(pady=20, side="bottom")
-
-            """settings_frame = tk.Frame(self._new_window)
-            settings_frame.pack(fill="both", expand=True)
-
-            # Frame for adding users section
-            add_frame = tk.Frame(settings_frame)
-            add_frame.pack(side="left", padx=10, pady=10)
-
-            # Frame for deleting users section
-            delete_frame = tk.Frame(settings_frame)
-            delete_frame.pack(side="right", padx=10, pady=10)
-
-            # All widgets required for adding a user
-            add_label = tk.Label(add_frame, text="Add User", font=('Arial', 14), anchor="n")
-            add_label.pack(side="top", pady=5)
-
-            add_name_frame = tk.Frame(add_frame)
-            add_name_frame.pack(side="left")
-
-            add_name_label = tk.Label(add_name_frame, text="Name: ", font=('Arial', 10))
-            add_name_label.pack(side="left", pady=5)
-
-            self.add_name_text = tk.Text(add_name_frame, height=1, width= 15)
-            self.add_name_text.pack(side="left", pady=5)
-
-            # All widgets required for deleting a user
-            delete_label = tk.Label(delete_frame, text="Delete User", font=('Arial', 14), anchor="n")
-            delete_label.pack(side="top", pady=5)
-
-            delete_name_frame = tk.Frame(delete_frame)
-            delete_name_frame.pack(side="left")
-
-            delete_name_label = tk.Label(delete_name_frame, text="Name: ", font=('Arial', 10))
-            delete_name_label.pack(side="left", pady=5)
-
-            self.delete_name_text = tk.Text(delete_name_frame, height=1, width= 15)
-            self.delete_name_text.pack(side="left", pady=5)
-
-            
-
-            # Button to add a user to the database
-            add_user = tk.Button(add_frame, text="Add User", command=self.add_user_command)
-            add_user.pack(side="bottom", anchor="s", padx=10, pady=5)
-
-            # Button to delete user from the database
-            delete_user = tk.Button(delete_frame, text="Delete User", command=self.del_user_command)
-            delete_user.pack(side="bottom", anchor="s", padx=10, pady=5)"""
-    
-    def close_settings(self) -> None:
-        """Closes the settings window. Called when the close button is pressed in settings."""
-
-        self._settings_window = False
-        self._new_window.destroy()
 
     def add_user_command(self) -> None:
         """
@@ -331,15 +284,16 @@ class FaceRecApp:
             file_path = f"./faces/{name}"
             img = Image.open(file_path)
             img_arr = np.asarray(img)
-            encoding = face_recognition.face_encodings(img_arr)
+            """encoding = face_recognition.face_encodings(img_arr)
             if len(encoding) > 0:
-                self.known_encodings.append(encoding[0])
+                self.known_encodings.append(encoding[0])"""
             
             file_name_split = name.split('.')
             user_name = file_name_split[0]
             self.known_names.append(user_name)
+            self.data.append((user_name, file_path))
 
 if __name__=="__main__":
-    root = tk.Tk()
-    app = FaceRecApp(root)
-    root.mainloop()
+    # root = tk.Tk()
+    app = FaceRecApp()
+    app.mainloop()
