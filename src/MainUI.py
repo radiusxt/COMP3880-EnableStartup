@@ -26,7 +26,7 @@ class FaceRecApp:
         self.face_identifier = FaceIdentifier()
 
         # Variables to keep track of whether the respective windows are open
-        self._settings_window = None
+        self._settings_window = False
         self._add_user_window = None
         self._delete_user_window = None
 
@@ -34,50 +34,54 @@ class FaceRecApp:
         self._root = root
         self._root.title("Face Recognition App")
         self._root.geometry("1200x600")
+        self._root.configure(bg="#3c3d3c")
 
         # The main frame in the GUI which holds the video and information frames
-        main_frame = tk.Frame(root)
-        main_frame.pack(fill="both")
+        main_frame = tk.Frame(root, bg="#3c3d3c")
+        main_frame.pack(fill="both", anchor="center")
 
         # Frame for video display
-        video_frame = tk.Frame(main_frame)
+        video_frame = tk.Frame(main_frame, bg="#3c3d3c")
         video_frame.pack(side="left")
 
         # Frame for person information
-        info_frame = tk.Frame(main_frame)
+        info_frame = tk.Frame(main_frame, bg="#3c3d3c")
         info_frame.pack(side="right", padx=10, pady=10)
 
+        buttons_frame = tk.Frame(info_frame, bg="#3c3d3c")
+        buttons_frame.pack(side="top")
+
         # Label to display detected face
-        self._face_label = tk.Label(info_frame, anchor='n', text="No close face detected")
-        self._face_label.pack(side="top", padx=5, pady=5)
+        self._face_label = tk.Label(info_frame, anchor='n', text="No close face detected", bg="#3c3d3c", fg="white", font=("Arial", 10, "bold"))
+        self._face_label.pack(side="top", padx=50, pady=50)
 
         # Label to display name of detected face if recognised
-        self._name_label = tk.Label(info_frame, text="Name: _____", anchor='n')
-        self._name_label.pack(side="top")
+        self._name_label = tk.Label(info_frame, text="Name: _____", anchor='n', font=("Arial", 12), fg="white", bg="#3c3d3c")
+        self._name_label.pack(side="top", pady=25)
 
         # Frame to store confirm and cancel buttons
-        buttons_frame = tk.Frame(info_frame)
-        buttons_frame.pack(side="bottom")
+        confirm_frame = tk.Frame(info_frame, bg="#3c3d3c")
+        confirm_frame.pack(side="bottom")
 
         # Button to clear face frame 
-        self._cancel_button = tk.Button(buttons_frame, text="Cancel", anchor='s', command=self.confirm_command)
-        self._cancel_button.pack(side="right")
+        self._cancel_button = tk.Button(confirm_frame, text="Cancel", anchor='s', command=self.confirm_command, width=15, font=("Arial", 10, "bold"))
+        self._cancel_button.pack(side="right", padx=25)
 
         # Button to confirm that detected face and displayed name are correct
-        self._confirm_button = tk.Button(buttons_frame, text="Confirm", anchor='s', command=self.confirm_command)
-        self._confirm_button.pack(side="right")
+        self._confirm_button = tk.Button(confirm_frame, text="Confirm", anchor='s', command=self.confirm_command, width=15, font=("Arial", 10, "bold"))
+        self._confirm_button.pack(side="right", padx=25)
 
-        # Label to display the video feed along with the box around the persons face
-        self._video_label = tk.Label(video_frame, anchor='w')
-        self._video_label.pack(side="right", padx=5, pady=5)
+        # Button to clear face frame 
+        self._quit_button = tk.Button(buttons_frame, text="Quit", anchor='s', command=self._root.destroy, width=15, font=("Arial", 10, "bold"))
+        self._quit_button.pack(side="right", padx=25)
 
         # Button to open the settings window
-        self._settings_button = tk.Button(video_frame, text="Settings", command=self.settings_command)
-        self._settings_button.pack(anchor="nw", side="left")
+        self._settings_button = tk.Button(buttons_frame, text="Settings", command=self.settings_command, width=15, font=("Arial", 10, "bold"))
+        self._settings_button.pack(side="right", padx=25)
 
-        # Button to close the root window
-        self._close_button = tk.Button(video_frame, text="Close", command=self._root.destroy)
-        self._close_button.pack(anchor="nw", side="left")
+        # Label to display the video feed along with the box around the persons face
+        self._video_label = tk.Label(video_frame, anchor="center", bg="#3c3d3c")
+        self._video_label.pack(padx=5, pady=5)
 
         self.face_detected = False
 
@@ -95,43 +99,47 @@ class FaceRecApp:
         self._detected_face_img = None
         self._face_frame_arr = None
 
-        #self.process_frame = True
         self._frame = None
+        
     
     def update_vid(self) -> None:
         """Updates the video label with the frame read from the webcam."""
 
         while True:
-            frame, _, _, _, _ = self.face_detector.get_frame()
-            if frame:
-                self._video_label.configure(image=frame)
-                self._video_label.image = frame
-            
-            # Pause for 30 milliseconds before updating to reduce CPU usage.
-            time.sleep(0.030)
+            # Don't update if settings window is open to improve performance
+            if not self._settings_window:
+                frame, _, _, _, _ = self.face_detector.get_frame()
+                if frame:
+                    self._video_label.configure(image=frame)
+                    self._video_label.image = frame
+                
+                # Pause for 30 milliseconds before updating to reduce CPU usage.
+                time.sleep(0.030)
 
     def update_face_frame(self) -> None:
         """Updates face label with detected face if there is a face detected."""
 
         while True:
-            full_frame, detected_face_frame, frame, face_locations, face_frame_arr = self.face_detector.get_frame()
-            if detected_face_frame and not self.face_detected:
-                self._frame = frame
-                self._face_label.configure(image=detected_face_frame, text="")
-                self._face_label.image = detected_face_frame
-                self._detected_face_img = detected_face_frame
-                self._face_frame_arr = face_frame_arr
-                self.face_detected = True
+            # Don't update if settings window is open to improve performance
+            if not self._settings_window:
+                full_frame, detected_face_frame, frame, face_locations, face_frame_arr = self.face_detector.get_frame()
+                if detected_face_frame and not self.face_detected:
+                    self._frame = frame
+                    self._face_label.configure(image=detected_face_frame, text="")
+                    self._face_label.image = detected_face_frame
+                    self._detected_face_img = detected_face_frame
+                    self._face_frame_arr = face_frame_arr
+                    self.face_detected = True
 
-                name = self.face_identifier.identify_face(self._detected_face_img, face_locations, self.known_encodings, self.known_names)
-                self._name_label.config(text=f"Name: {name}")
-            elif not detected_face_frame and not self.face_detected:
-                self._face_label.configure(text="No close face detected")
-                self._name_label.configure(text="")
-                self._detected_face_img = None
-            
-            # Pause for 100 milliseconds before updating to reduce CPU usage.
-            time.sleep(0.1)
+                    #name = self.face_identifier.identify_face(self._detected_face_img, face_locations, self.known_encodings, self.known_names)
+                    #self._name_label.config(text=f"Name: {name}")
+                elif not detected_face_frame and not self.face_detected:
+                    self._face_label.configure(text="No close face detected")
+                    self._name_label.configure(text="Name: ")
+                    self._detected_face_img = None
+                
+                # Pause for 100 milliseconds before updating to reduce CPU usage.
+                time.sleep(0.1)
 
     def settings_command(self):
         """Opens and initialises settings window widgets."""
@@ -144,8 +152,13 @@ class FaceRecApp:
             self._new_window = tk.Tk()
             self._new_window.title("Settings")
             self._new_window.geometry("1200x600")
+            self._new_window.configure(bg="#3c3d3c")
 
-            settings_frame = tk.Frame(self._new_window)
+            # Button to close the settings window
+            close_settings = tk.Button(self._new_window, text="Close", command=self.close_settings)
+            close_settings.pack(pady=20, side="bottom")
+
+            """settings_frame = tk.Frame(self._new_window)
             settings_frame.pack(fill="both", expand=True)
 
             # Frame for adding users section
@@ -182,9 +195,7 @@ class FaceRecApp:
             self.delete_name_text = tk.Text(delete_name_frame, height=1, width= 15)
             self.delete_name_text.pack(side="left", pady=5)
 
-            # Button to close the settings window
-            close_settings = tk.Button(self._new_window, text="Close", command=self.close_settings)
-            close_settings.pack(pady=20, side="bottom")
+            
 
             # Button to add a user to the database
             add_user = tk.Button(add_frame, text="Add User", command=self.add_user_command)
@@ -192,7 +203,7 @@ class FaceRecApp:
 
             # Button to delete user from the database
             delete_user = tk.Button(delete_frame, text="Delete User", command=self.del_user_command)
-            delete_user.pack(side="bottom", anchor="s", padx=10, pady=5)
+            delete_user.pack(side="bottom", anchor="s", padx=10, pady=5)"""
     
     def close_settings(self) -> None:
         """Closes the settings window. Called when the close button is pressed in settings."""

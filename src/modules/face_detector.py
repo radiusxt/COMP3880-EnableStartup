@@ -45,7 +45,7 @@ class FaceDetector:
         ret, frame = self.video.read()
 
         # Uncomment the line below when running on a local machine
-        # frame = cv2.resize(frame, (640, 480))
+        frame = cv2.resize(frame, (640, 480))
 
         if not ret:
             return None, None, None, None, None
