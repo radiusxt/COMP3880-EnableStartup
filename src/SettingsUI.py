@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
 import os
 
@@ -15,6 +16,8 @@ class SettingsUI:
         self._new_window.geometry("1200x600")
         self._new_window.configure(bg="#3c3d3c")
 
+        self.scroll_pending = False
+
         self.parent = parent
         self.settings_rows = settings_rows
         self.data = data
@@ -27,11 +30,36 @@ class SettingsUI:
         frame = tk.Frame(self._new_window, bg="#3c3d3c")
         frame.pack(expand=True, fill="both")
 
-        frame.columnconfigure(0, weight=1)
+        container = tk.Frame(frame, bg="#3c3d3c")
+        container.pack(expand=True, fill="both", pady=10)
 
-        table_frame = tk.Frame(frame, bg="#3c3d3c")
-        table_frame.grid(row=0, column=0)
-        #table_frame.pack(expand=True, fill="both", side="top", anchor="center")
+        canvas = tk.Canvas(container, bg="#3c3d3c", highlightthickness=0)
+        canvas.pack(side="left", fill="both", expand=True, padx=10)
+
+        scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        scrollbar.pack(side="left", fill="y")
+
+        table_frame = tk.Frame(canvas, bg="#3c3d3c")
+        self.table_frame_id = canvas.create_window((0, 0), window=table_frame, anchor="n")
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        """def update_scroll_region(self, event=None):
+            if self.scroll_pending:
+                return
+            self.scroll_pending = True
+            self.canvas.after(10, self._update_scroll_region)"""
+
+        def update_scroll_region(event=None):
+            self.scroll_pending = False
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            canvas_width = canvas.winfo_width()
+            table_width = table_frame.winfo_width()
+            x_offset = max((canvas_width - table_width) // 2, 0)
+            canvas.coords(self.table_frame_id, x_offset, 0)
+
+        table_frame.bind("<Configure>", update_scroll_region)
+        canvas.bind("<Configure>", update_scroll_region)
 
         self.create_settings_table(table_frame)
 
@@ -46,7 +74,9 @@ class SettingsUI:
         headers = ["Name", "File Path", "Action"]
 
         for i, header in enumerate(headers):
-            tk.Label(frame, text=header, fg="white", bg="#001314", font=("Arial", 16, "bold"), width=15, anchor="center").grid(row=0, column=i, pady=5, padx=1)
+            label = tk.Label(frame, text=header, fg="white", bg="#001314", font=("Arial", 16, "bold"), width=15, anchor="center")
+            label.grid(row=0, column=i, pady=5, padx=1, sticky="nsew")
+            frame.columnconfigure(i, weight=1)
         
         for i, (c1, c2) in enumerate(self.data):
             self.add_row(i+1, c1, c2, frame)
@@ -54,13 +84,17 @@ class SettingsUI:
         return self.settings_rows
         
     def add_row(self, row, text_col1, text_col2, frame):
-        col1 = tk.Label(frame, text=text_col1, fg="white", bg="#3c3d3c", width=15, font=("Arial", 16))
-        col2 = tk.Label(frame, text=text_col2, fg="white", bg="#3c3d3c", width=15, font=("Arial", 16))
-        col3 = tk.Button(frame, text="X", fg="red", bg="#001314", width=5, font=("Arial", 16, "bold"), command=lambda r=row: self.delete_row(r))
+        col1 = tk.Label(frame, text=text_col1, fg="white", bg="#3c3d3c", font=("Arial", 16), anchor='w')
+        col2 = tk.Label(frame, text=text_col2, fg="white", bg="#3c3d3c", font=("Arial", 16), anchor='w')
+        col3 = tk.Button(frame, text="X", fg="red", bg="#001314", font=("Arial", 16, "bold"), command=lambda r=row: self.delete_row(r))
 
-        col1.grid(row=row, column=0, pady=2)
-        col2.grid(row=row, column=1, pady=2)
-        col3.grid(row=row, column=2, pady=2)
+        col1.grid(row=row, column=0, pady=2, padx=1, sticky="nsew")
+        col2.grid(row=row, column=1, pady=2, padx=1, sticky="nsew")
+        col3.grid(row=row, column=2, pady=2, padx=1, sticky="nsew")
+
+        frame.columnconfigure(0, weight=1)
+        frame.columnconfigure(1, weight=2)
+        frame.columnconfigure(2, weight=0)
 
         self.settings_rows.append((col1, col2, col3))
     
@@ -88,12 +122,8 @@ class SettingsUI:
             self.data.pop(data_index)
 
             user_index = self.known_names.index(name)
-            print(f"[debug] user index: {user_index}")
-            print(f"[debug] known names: {self.known_names}")
             self.known_names.pop(user_index)
             #self.known_encodings.pop(user_index)
-
-            print(f"name: {name}, path: {file_path}")
 
             os.remove(file_path)
 

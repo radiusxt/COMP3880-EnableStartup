@@ -15,6 +15,7 @@ from SettingsUI import SettingsUI
 
 cv2.ocl.setUseOpenCL(True)
 
+
 class FaceRecApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -162,8 +163,6 @@ class FaceRecApp(tk.Tk):
             self._settings_window = True
             self.settings = SettingsUI(self, [], self.known_names, self.known_encodings, self.data)
 
-
-
     def add_user_command(self) -> None:
         """
         Called when the add user button is pressed in the settings menu. Name of user to add
@@ -292,6 +291,7 @@ class FaceRecApp(tk.Tk):
             user_name = file_name_split[0]
             self.known_names.append(user_name)
             self.data.append((user_name, file_path))
+
 
 if __name__=="__main__":
     # root = tk.Tk()
