@@ -2,19 +2,23 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 import os
+from AddUserUI import AddUserUI
 
 
 class SettingsUI:
     def __init__(self, parent, settings_rows, known_names, known_encodings, data) -> None:
-        if hasattr(self, 'window') and self._new_window.winfo_exists():
+        if hasattr(self, 'window') and self._settings_window.winfo_exists():
             # If window already exists, bring it to focus
-            self._new_window.deiconify()
+            self._settings_window.deiconify()
             return
         
-        self._new_window = tk.Toplevel(parent)
-        self._new_window.title("Settings")
-        self._new_window.geometry("1200x600")
-        self._new_window.configure(bg="#3c3d3c")
+        self.add_user_window = False
+        self.add_user_ui = None
+
+        self._settings_window = tk.Toplevel(parent)
+        self._settings_window.title("Settings")
+        self._settings_window.geometry("1200x600")
+        self._settings_window.configure(bg="#3c3d3c")
 
         self.scroll_pending = False
 
@@ -24,10 +28,10 @@ class SettingsUI:
         self.known_names = known_names
         self.known_encodings = known_encodings
 
-        buttons_frame = tk.Frame(self._new_window, bg="#3c3d3c")
+        buttons_frame = tk.Frame(self._settings_window, bg="#3c3d3c")
         buttons_frame.pack(fill="x", side="top")
 
-        frame = tk.Frame(self._new_window, bg="#3c3d3c")
+        frame = tk.Frame(self._settings_window, bg="#3c3d3c")
         frame.pack(expand=True, fill="both")
 
         container = tk.Frame(frame, bg="#3c3d3c")
@@ -67,7 +71,7 @@ class SettingsUI:
         close_settings = tk.Button(buttons_frame, text="Close", fg="white", bg="#001314", command=self.close_settings, width=15, font=("Arial", 10, "bold"))
         close_settings.pack(side="left", anchor="n", padx=75, pady=25)
 
-        add_user_button = tk.Button(buttons_frame, text="Add User", fg="white", bg="#001314", width=15, font=("Arial", 10, "bold"), command=None)
+        add_user_button = tk.Button(buttons_frame, text="Add User", fg="white", bg="#001314", width=15, font=("Arial", 10, "bold"), command=self.add_user_cmd)
         add_user_button.pack(side="right", anchor="n", padx=75, pady=25)
     
     def create_settings_table(self, frame):
@@ -102,7 +106,7 @@ class SettingsUI:
         name = ""
         file_path = ""
 
-        confirm_delete = messagebox.askyesno(parent=self._new_window, title=None,
+        confirm_delete = messagebox.askyesno(parent=self._settings_window, title=None,
                         message="Are you sure you want to remove this user from the database?")
         
 
@@ -127,7 +131,7 @@ class SettingsUI:
 
             os.remove(file_path)
 
-            messagebox.showinfo(parent=self._new_window, title=None, message=f"Successfully deleted user '{name}' from Database")
+            messagebox.showinfo(parent=self._settings_window, title=None, message=f"Successfully deleted user '{name}' from Database")
         #return self.known_names, self.known_encodings
         return self.known_names
     
@@ -137,5 +141,12 @@ class SettingsUI:
         # self._settings_window = False
         self.parent._settings_window = False
         self.settings_rows = []
-        self._new_window.destroy()
+        self._settings_window.destroy()
+
+    def add_user_cmd(self) -> None:
+        if not self.add_user_window:
+            self.close_settings()
+            self.parent.withdraw()
+            self.add_user_window = True
+            self.add_user_ui = AddUserUI(self._settings_window, self.parent)
         

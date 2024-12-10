@@ -106,10 +106,10 @@ class FaceRecApp(tk.Tk):
         self.face_thread.start()
 
         # Variables to store detected face in image and numpy array formats
-        self._detected_face_img = None
-        self._face_frame_arr = None
+        self.detected_face_img = None
+        self.face_frame_arr = None
 
-        self._frame = None
+        self.frame = None
         
     def quit_command(self) -> None:
         """if self._settings_window:
@@ -138,11 +138,11 @@ class FaceRecApp(tk.Tk):
             if not self._settings_window:
                 full_frame, detected_face_frame, frame, face_locations, face_frame_arr = self.face_detector.get_frame()
                 if detected_face_frame and not self.face_detected:
-                    self._frame = frame
+                    self.frame = frame
                     self._face_label.configure(image=detected_face_frame, text="")
                     self._face_label.image = detected_face_frame
-                    self._detected_face_img = detected_face_frame
-                    self._face_frame_arr = face_frame_arr
+                    self.detected_face_img = detected_face_frame
+                    self.face_frame_arr = face_frame_arr
                     self.face_detected = True
 
                     #name = self.face_identifier.identify_face(self._detected_face_img, face_locations, self.known_encodings, self.known_names)
@@ -150,7 +150,8 @@ class FaceRecApp(tk.Tk):
                 elif not detected_face_frame and not self.face_detected:
                     self._face_label.configure(text="No close face detected")
                     self._name_label.configure(text="Name: ")
-                    self._detected_face_img = None
+                    self.detected_face_img = None
+                    self.face_frame_arr = None
                 
                 # Pause for 100 milliseconds before updating to reduce CPU usage.
                 time.sleep(0.1)
@@ -186,7 +187,7 @@ class FaceRecApp(tk.Tk):
                 messagebox.showwarning(title=None, message="User already exists in database!")
                 return
             
-            user_image = self._face_frame_arr
+            user_image = self.face_frame_arr
             rgb_frame = cv2.cvtColor(user_image, cv2.COLOR_BGR2RGB)
             user_encoding = face_recognition.face_encodings(rgb_frame)
             if len(user_encoding) > 0:
