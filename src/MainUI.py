@@ -161,95 +161,9 @@ class FaceRecApp(tk.Tk):
 
         # If the settings window is not already open, open it
         if not self._settings_window:
+            self.withdraw()
             self._settings_window = True
             self.settings = SettingsUI(self, [], self.known_names, self.known_encodings, self.data)
-
-    def add_user_command(self) -> None:
-        """
-        Called when the add user button is pressed in the settings menu. Name of user to add
-        is collected. If name already exists in the list of known names, a messagebox is displayed
-        and the settings menu is closed.
-
-        If the name does not exist in the list of known names, the detected face frame is 
-        preprocessed and encoding for this frame is generated. If encoding is properly
-        generated, the encoding and name are appended to the list of known encodings
-        and known names respectively. The file name is created, the numpy array of
-        the detected frame is converted to jpg format, and the frame is stored in the
-        faces directory.
-
-        If encoding is not generated, the settings menu is closed and a messagebox is
-        displayed to inform the user of the error.
-        """
-        if not self._add_user_window:
-            user_to_add = self.add_name_text.get(1.0, "end-1c")
-            if user_to_add in self.known_names:
-                self.close_settings()
-                messagebox.showwarning(title=None, message="User already exists in database!")
-                return
-            
-            user_image = self.face_frame_arr
-            rgb_frame = cv2.cvtColor(user_image, cv2.COLOR_BGR2RGB)
-            user_encoding = face_recognition.face_encodings(rgb_frame)
-            if len(user_encoding) > 0:
-                self.known_encodings.append(user_encoding[0])
-                self.known_names.append(user_to_add)
-
-                file_name = self.get_file_name(user_to_add)
-                file_path = f"./faces/{file_name}"
-                im = Image.fromarray(rgb_frame)
-                im.save(file_path)
-
-                self.close_settings()
-                messagebox.showinfo(title=None, message=f"Successfully added '{user_to_add}' to database")
-                return
-            else:
-                self.close_settings()
-                messagebox.showwarning(title=None, message="Could not detect any face, please try again!")
-                return
-                
-    def del_user_command(self) -> None:
-        """
-        Called when the delete user button is pressed. Gets the name entered in the name textbox.
-        Checks if the name is in the list of known names. If yes, confirm that the user wants to
-        delete the person from the database, and remove the user.
-
-        Deleted user's name is removed from the known names list, their encoding is removed from
-        the known encodings list, and their face image is removed from the faces directory.
-
-        If the user does not exist in the database, settings menu is closed and messagebox is 
-        displayed informing that the user was not found.
-        """
-        if not self._delete_user_window:
-            # Check if a user exists
-            user_to_delete = self.delete_name_text.get(1.0, "end-1c")
-
-            if user_to_delete in self.known_names:
-                confirm_delete = messagebox.askyesno(title=None,
-                        message="Are you sure you want to remove this user from the database?")
-                user_index = self.known_names.index(user_to_delete)
-
-                if confirm_delete:
-                    # Remove the name and face encoding from the list of known names and encodings
-                    self.known_names.pop(user_index)
-                    self.known_encodings.pop(user_index)
-
-                    # Remove the file of the user they entered
-                    file_name = self.get_file_name(user_to_delete)
-                    file_path = f"./faces/{file_name}"
-                    os.remove(file_path)
-
-                    # Close the settings window and inform user that deletion was successful
-                    self.close_settings()
-                    messagebox.showinfo(title=None, message=f"Successfully deleted user '{user_to_delete}' from Database")
-                    return
-                else:
-                    self.close_settings()
-                    return
-            else:
-                # If person is not in the database, inform the user and close the settings window
-                self.close_settings()
-                messagebox.showerror(title=None, message="User not found!")
-                return
                 
     def confirm_command(self) -> None:
         """Called when the confirm or cancel buttons are pressed. Resets face label to default text"""

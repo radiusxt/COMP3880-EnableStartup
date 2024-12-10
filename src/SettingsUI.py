@@ -37,35 +37,22 @@ class SettingsUI:
         container = tk.Frame(frame, bg="#3c3d3c")
         container.pack(expand=True, fill="both", pady=10)
 
-        canvas = tk.Canvas(container, bg="#3c3d3c", highlightthickness=0)
-        canvas.pack(side="left", fill="both", expand=True, padx=10)
+        self.canvas = tk.Canvas(container, bg="#3c3d3c", highlightthickness=0)
+        self.canvas.pack(side="left", fill="both", expand=True, padx=10)
 
-        scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        scrollbar = ttk.Scrollbar(container, orient="vertical", command=self.canvas.yview)
         scrollbar.pack(side="left", fill="y")
 
-        table_frame = tk.Frame(canvas, bg="#3c3d3c")
-        self.table_frame_id = canvas.create_window((0, 0), window=table_frame, anchor="n")
+        self.table_frame = tk.Frame(self.canvas, bg="#3c3d3c")
+        self.table_frame_id = self.canvas.create_window((0, 0), window=self.table_frame, anchor="n")
 
-        canvas.configure(yscrollcommand=scrollbar.set)
+        self.canvas.configure(yscrollcommand=scrollbar.set)
 
-        """def update_scroll_region(self, event=None):
-            if self.scroll_pending:
-                return
-            self.scroll_pending = True
-            self.canvas.after(10, self._update_scroll_region)"""
 
-        def update_scroll_region(event=None):
-            self.scroll_pending = False
-            canvas.configure(scrollregion=canvas.bbox("all"))
-            canvas_width = canvas.winfo_width()
-            table_width = table_frame.winfo_width()
-            x_offset = max((canvas_width - table_width) // 2, 0)
-            canvas.coords(self.table_frame_id, x_offset, 0)
+        self.table_frame.bind("<Configure>", self.update_scroll_region)
+        self.canvas.bind("<Configure>", self.update_scroll_region)
 
-        table_frame.bind("<Configure>", update_scroll_region)
-        canvas.bind("<Configure>", update_scroll_region)
-
-        self.create_settings_table(table_frame)
+        self.create_settings_table()
 
         # Button to close the settings window
         close_settings = tk.Button(buttons_frame, text="Close", fg="white", bg="#001314", command=self.close_settings, width=15, font=("Arial", 10, "bold"))
@@ -74,16 +61,24 @@ class SettingsUI:
         add_user_button = tk.Button(buttons_frame, text="Add User", fg="white", bg="#001314", width=15, font=("Arial", 10, "bold"), command=self.add_user_cmd)
         add_user_button.pack(side="right", anchor="n", padx=75, pady=25)
     
-    def create_settings_table(self, frame):
+    def update_scroll_region(self, event=None):
+        self.scroll_pending = False
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        canvas_width = self.canvas.winfo_width()
+        table_width = self.table_frame.winfo_width()
+        x_offset = max((canvas_width - table_width) // 2, 0)
+        self.canvas.coords(self.table_frame_id, x_offset, 0)
+    
+    def create_settings_table(self):
         headers = ["Name", "File Path", "Action"]
 
         for i, header in enumerate(headers):
-            label = tk.Label(frame, text=header, fg="white", bg="#001314", font=("Arial", 16, "bold"), width=15, anchor="center")
+            label = tk.Label(self.table_frame, text=header, fg="white", bg="#001314", font=("Arial", 16, "bold"), width=15, anchor="center")
             label.grid(row=0, column=i, pady=5, padx=1, sticky="nsew")
-            frame.columnconfigure(i, weight=1)
+            self.table_frame.columnconfigure(i, weight=1)
         
         for i, (c1, c2) in enumerate(self.data):
-            self.add_row(i+1, c1, c2, frame)
+            self.add_row(i+1, c1, c2, self.table_frame)
 
         return self.settings_rows
         
@@ -142,11 +137,10 @@ class SettingsUI:
         self.parent._settings_window = False
         self.settings_rows = []
         self._settings_window.destroy()
+        self.parent.deiconify()
 
     def add_user_cmd(self) -> None:
         if not self.add_user_window:
-            self.close_settings()
-            self.parent.withdraw()
             self.add_user_window = True
             self.add_user_ui = AddUserUI(self._settings_window, self.parent)
         

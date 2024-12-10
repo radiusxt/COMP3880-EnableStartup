@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
 import time
+import cv2
+import face_recognition
+from PIL import Image
 
 
 class AddUserUI:
@@ -39,7 +42,7 @@ class AddUserUI:
         self.buttons_frame = tk.Frame(self._add_window, bg="#3c3d3c")
         self.buttons_frame.pack(side="top", pady=10)
 
-        self.confirm_button = tk.Button(self.buttons_frame, width=15, text="Confirm")
+        self.confirm_button = tk.Button(self.buttons_frame, width=15, text="Confirm", command=self.confirm_cmd)
         self.confirm_button.pack(side="left", padx=10)
 
         self.cancel_button = tk.Button(self.buttons_frame, width=15, text="Cancel", command=self.cancel_cmd)
@@ -78,4 +81,37 @@ class AddUserUI:
             
     def cancel_cmd(self):
         self._add_window.destroy()
-        self.main.deiconify()
+        self.settings.add_user_window = False
+
+    def confirm_cmd(self):
+        name = self.name_text.get(1.0, "end-1c")
+        if name == "":
+            messagebox.showerror(title=None, message="Please enter a name")
+            return
+        
+        if name in self.known_names:
+            messagebox.showwarning(title=None, message="User already exists in database!")
+            return
+        
+        user_image = self.face_arr
+        rgb_frame = cv2.cvtColor(user_image, cv2.COLOR_BGR2RGB)
+        user_encoding = face_recognition.face_encodings(rgb_frame)
+        if len(user_encoding) > 0:
+            self.main.known_encodings.append(user_encoding[0])
+            self.main.known_names.append(name)
+
+            file_name = self.main.get_file_name(name)
+            file_path = f"./faces/{file_name}"
+            im = Image.fromarray(rgb_frame)
+            im.save(file_path)
+
+            self.main.data.append((name, file_path))
+
+            self.cancel_cmd()
+
+            messagebox.showinfo(title=None, message=f"Successfully added '{name}' to database")
+            return
+        else:
+            #self.close_settings()
+            messagebox.showwarning(title=None, message="Could not detect any face, please try again!")
+            return
