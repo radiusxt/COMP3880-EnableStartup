@@ -1,9 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
 import cv2
-from PIL import Image
-import numpy as np
-import os
 import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
@@ -19,17 +15,6 @@ cv2.ocl.setUseOpenCL(True)
 class FaceRecApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        # List of known face encodings and names
-        self.known_encodings = []
-        self.known_names = [] 
-
-        # List containing tuples of name and file name of users in DB
-        self.data = []
-
-        # List containing tuples of widgets in the settings table
-        self.settings_rows = []
-
-        self.populate_initial_faces()
 
         self.face_detector = FaceDetector()
         #self.face_identifier = FaceIdentifier()
@@ -41,7 +26,6 @@ class FaceRecApp(tk.Tk):
         self._delete_user_window = None
 
         # The main window for the application
-        # self._root = root
         self.title("Face Recognition App")
         self.geometry("1200x600")
         self.configure(bg="#3c3d3c")
@@ -163,7 +147,7 @@ class FaceRecApp(tk.Tk):
         if not self._settings_window:
             self.withdraw()
             self._settings_window = True
-            self.settings = SettingsUI(self, [], self.known_names, self.known_encodings, self.data)
+            self.settings = SettingsUI(self)
                 
     def confirm_command(self) -> None:
         """Called when the confirm or cancel buttons are pressed. Resets face label to default text"""
@@ -171,44 +155,7 @@ class FaceRecApp(tk.Tk):
         self.face_detected = False
         self._face_label.configure(image="", text="No close face detected")
 
-    def get_file_name(self, name: str) -> str:
-        """
-        Creates file name in the required format, which is the name of the user to be stored
-        followed by '.jpg'.
-
-        Args:
-            name (str): Name of the user
-        
-        Returns:
-            str: The file name in the format "{name}.jpg"
-        """
-        file_name = name + ".jpg"
-        return file_name
-
-    def populate_initial_faces(self) -> None:
-        """
-        Populates known names and known encodings list with users that are already in the
-        database.
-        """
-        directory = "./faces"
-
-        # For each user, generate the encoding and extract the name, then append these to
-        # the respective lists
-        for name in os.listdir(directory):
-            file_path = f"./faces/{name}"
-            img = Image.open(file_path)
-            img_arr = np.asarray(img)
-            """encoding = face_recognition.face_encodings(img_arr)
-            if len(encoding) > 0:
-                self.known_encodings.append(encoding[0])"""
-            
-            file_name_split = name.split('.')
-            user_name = file_name_split[0]
-            self.known_names.append(user_name)
-            self.data.append((user_name, file_path))
-
 
 if __name__=="__main__":
-    # root = tk.Tk()
     app = FaceRecApp()
     app.mainloop()

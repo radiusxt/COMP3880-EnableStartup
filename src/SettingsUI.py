@@ -5,33 +5,31 @@ import os
 from AddUserUI import AddUserUI
 
 
-class SettingsUI:
-    def __init__(self, parent, settings_rows, known_names, known_encodings, data) -> None:
-        if hasattr(self, 'window') and self._settings_window.winfo_exists():
-            # If window already exists, bring it to focus
-            self._settings_window.deiconify()
-            return
-        
+class SettingsUI(tk.Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+
         self.add_user_window = False
         self.add_user_ui = None
 
-        self._settings_window = tk.Toplevel(parent)
-        self._settings_window.title("Settings")
-        self._settings_window.geometry("1200x600")
-        self._settings_window.configure(bg="#3c3d3c")
+        self.title("Settings")
+        self.geometry("1200x600")
+        self.configure(bg="#3c3d3c")
 
         self.scroll_pending = False
 
         self.parent = parent
-        self.settings_rows = settings_rows
-        self.data = data
-        self.known_names = known_names
-        self.known_encodings = known_encodings
+        self.settings_rows = []
+        self.data = []
+        self.known_names = []
+        self.known_encodings = []
 
-        buttons_frame = tk.Frame(self._settings_window, bg="#3c3d3c")
+        self.populate_initial_faces()
+
+        buttons_frame = tk.Frame(self, bg="#3c3d3c")
         buttons_frame.pack(fill="x", side="top")
 
-        frame = tk.Frame(self._settings_window, bg="#3c3d3c")
+        frame = tk.Frame(self, bg="#3c3d3c")
         frame.pack(expand=True, fill="both")
 
         container = tk.Frame(frame, bg="#3c3d3c")
@@ -47,7 +45,6 @@ class SettingsUI:
         self.table_frame_id = self.canvas.create_window((0, 0), window=self.table_frame, anchor="n")
 
         self.canvas.configure(yscrollcommand=scrollbar.set)
-
 
         self.table_frame.bind("<Configure>", self.update_scroll_region)
         self.canvas.bind("<Configure>", self.update_scroll_region)
@@ -79,8 +76,6 @@ class SettingsUI:
         
         for i, (c1, c2) in enumerate(self.data):
             self.add_row(i+1, c1, c2, self.table_frame)
-
-        return self.settings_rows
         
     def add_row(self, row, text_col1, text_col2, frame):
         col1 = tk.Label(frame, text=text_col1, fg="white", bg="#3c3d3c", font=("Arial", 16), anchor='w')
@@ -101,9 +96,8 @@ class SettingsUI:
         name = ""
         file_path = ""
 
-        confirm_delete = messagebox.askyesno(parent=self._settings_window, title=None,
+        confirm_delete = messagebox.askyesno(parent=self, title=None,
                         message="Are you sure you want to remove this user from the database?")
-        
 
         if confirm_delete:
             # Remove the name and face encoding from the list of known names and encodings
@@ -126,21 +120,36 @@ class SettingsUI:
 
             os.remove(file_path)
 
-            messagebox.showinfo(parent=self._settings_window, title=None, message=f"Successfully deleted user '{name}' from Database")
+            messagebox.showinfo(parent=self, title=None, message=f"Successfully deleted user '{name}' from Database")
         #return self.known_names, self.known_encodings
         return self.known_names
     
     def close_settings(self) -> None:
         """Closes the settings window. Called when the close button is pressed in settings."""
 
-        # self._settings_window = False
         self.parent._settings_window = False
         self.settings_rows = []
-        self._settings_window.destroy()
+        self.destroy()
         self.parent.deiconify()
 
     def add_user_cmd(self) -> None:
         if not self.add_user_window:
             self.add_user_window = True
-            self.add_user_ui = AddUserUI(self._settings_window, self.parent)
+            self.add_user_ui = AddUserUI(self, self.parent)
+
+    def populate_initial_faces(self) -> None:
+        """
+        Populates known names and known encodings list with users that are already in the
+        database.
+        """
+        directory = "./faces"
+
+        # For each user, generate the encoding and extract the name, then append these to
+        # the respective lists
+        for name in os.listdir(directory):
+            file_path = f"./faces/{name}"
+            file_name_split = name.split('.')
+            user_name = file_name_split[0]
+            self.known_names.append(user_name)
+            self.data.append((user_name, file_path))
         
