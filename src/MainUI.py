@@ -96,8 +96,6 @@ class FaceRecApp(tk.Tk):
         self.frame = None
         
     def quit_command(self) -> None:
-        """if self._settings_window:
-            self._new_window.destroy()"""
         self.destroy()
     
     def update_vid(self) -> None:
@@ -154,7 +152,6 @@ class FaceRecApp(tk.Tk):
 
         self.face_detected = False
         self._face_label.configure(image="", text="No close face detected")
-
 
 if __name__=="__main__":
     app = FaceRecApp()

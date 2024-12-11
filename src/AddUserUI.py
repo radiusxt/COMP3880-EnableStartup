@@ -84,22 +84,21 @@ class AddUserUI(tk.Toplevel):
             messagebox.showerror(title=None, message="Please enter a name")
             return
         
-        if name in self.settings.known_names:
-            messagebox.showwarning(title=None, message="User already exists in database!")
-            return
+        for entry in self.settings.data:
+            if name == entry["name"]:
+                messagebox.showwarning(title=None, message="User already exists in database!")
+                return
         
         rgb_frame = cv2.cvtColor(self.face_arr, cv2.COLOR_BGR2RGB)
 
         user_encoding = face_recognition.face_encodings(rgb_frame)
         if len(user_encoding) > 0:
-            self.settings.known_encodings.append(user_encoding[0])
-            self.settings.known_names.append(name)
-
             file_path = f"./faces/{name}.jpg"
             im = Image.fromarray(rgb_frame)
             im.save(file_path)
 
-            self.settings.data.append((name, file_path))
+            entry = self.create_json_entry(name, file_path, user_encoding[0])
+            self.settings.data.append(entry)
             self.settings.create_settings_table()
 
             self.cancel_cmd()
@@ -109,3 +108,7 @@ class AddUserUI(tk.Toplevel):
         else:
             messagebox.showwarning(title=None, message="Could not detect any face, please try again!")
             return
+        
+    def create_json_entry(self, name: str, path: str, encoding: list) -> dict:
+        entry = {"name": name, "path": path, "encoding": encoding.tolist()}
+        return entry

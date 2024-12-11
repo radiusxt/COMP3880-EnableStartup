@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox
 import os
 from AddUserUI import AddUserUI
+import json
 
 
 class SettingsUI(tk.Toplevel):
@@ -21,8 +22,6 @@ class SettingsUI(tk.Toplevel):
         self.parent = parent
         self.settings_rows = []
         self.data = []
-        self.known_names = []
-        self.known_encodings = []
 
         self.populate_initial_faces()
 
@@ -74,8 +73,8 @@ class SettingsUI(tk.Toplevel):
             label.grid(row=0, column=i, pady=5, padx=1, sticky="nsew")
             self.table_frame.columnconfigure(i, weight=1)
         
-        for i, (c1, c2) in enumerate(self.data):
-            self.add_row(i+1, c1, c2, self.table_frame)
+        for i, entry in enumerate(self.data):
+            self.add_row(i+1, entry["name"], entry["path"], self.table_frame)
         
     def add_row(self, row, text_col1, text_col2, frame):
         col1 = tk.Label(frame, text=text_col1, fg="white", bg="#3c3d3c", font=("Arial", 16), anchor='w')
@@ -93,39 +92,26 @@ class SettingsUI(tk.Toplevel):
         self.settings_rows.append((col1, col2, col3))
     
     def delete_row(self, row):
-        name = ""
-        file_path = ""
-
         confirm_delete = messagebox.askyesno(parent=self, title=None,
                         message="Are you sure you want to remove this user from the database?")
 
         if confirm_delete:
             # Remove the name and face encoding from the list of known names and encodings
-            
-            for i, widget in enumerate(self.settings_rows[row - 1]):
-                if i == 0:
-                    name = widget.cget("text")
-                elif i == 1:
-                    file_path = widget.cget("text")
+            for widget in self.settings_rows[row - 1]:
                 widget.destroy()
 
             self.settings_rows[row - 1] = (None, None, None)
+            name, file_path = self.data[row - 1]["name"], self.data[row - 1]["path"]
 
-            data_index = self.data.index((name, file_path))
-            self.data.pop(data_index)
-
-            user_index = self.known_names.index(name)
-            self.known_names.pop(user_index)
-            #self.known_encodings.pop(user_index)
-
+            self.data.pop(row-1)
             os.remove(file_path)
 
             messagebox.showinfo(parent=self, title=None, message=f"Successfully deleted user '{name}' from Database")
-        #return self.known_names, self.known_encodings
-        return self.known_names
     
     def close_settings(self) -> None:
         """Closes the settings window. Called when the close button is pressed in settings."""
+        with open("./data.json", 'w') as outfile:
+            json.dump(self.data, outfile, indent=4)
 
         self.parent._settings_window = False
         self.settings_rows = []
@@ -142,14 +128,6 @@ class SettingsUI(tk.Toplevel):
         Populates known names and known encodings list with users that are already in the
         database.
         """
-        directory = "./faces"
-
-        # For each user, generate the encoding and extract the name, then append these to
-        # the respective lists
-        for name in os.listdir(directory):
-            file_path = f"./faces/{name}"
-            file_name_split = name.split('.')
-            user_name = file_name_split[0]
-            self.known_names.append(user_name)
-            self.data.append((user_name, file_path))
+        with open("data.json", 'r') as file:
+            self.data = json.load(file)
         
