@@ -7,6 +7,13 @@ from PIL import Image, ImageTk
 cv2.ocl.setUseOpenCL(True)
 
 class FaceDetector:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(FaceDetector, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
+
     def __init__(self):
         # Initialise cv2 video capture
         self.video = cv2.VideoCapture(0)

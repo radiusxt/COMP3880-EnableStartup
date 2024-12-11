@@ -6,6 +6,7 @@ import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
 from PIL import Image
+from modules.face_detector import FaceDetector
 
 
 class AddUserUI(tk.Toplevel):
@@ -17,6 +18,8 @@ class AddUserUI(tk.Toplevel):
 
         self.face_img = None
         self.face_arr = None
+
+        self.detector = FaceDetector()
 
         self.title("Add User")
         self.geometry("800x600")
@@ -55,7 +58,7 @@ class AddUserUI(tk.Toplevel):
         time.sleep(0.2)
         self.face_label.configure(text="No Face Detected")
 
-        _, detected_face_frame, _, _, face_frame_arr = self.main.face_detector.get_frame()
+        _, detected_face_frame, _, _, face_frame_arr = self.detector.get_frame()
         if detected_face_frame:
             self.face_img = detected_face_frame
             self.face_arr = face_frame_arr
