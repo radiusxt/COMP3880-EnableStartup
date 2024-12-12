@@ -1,12 +1,9 @@
 import tkinter as tk
 import cv2
-import sys
-sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
-import face_recognition
 import threading
 import time
 from modules.face_detector import FaceDetector
-#from modules.face_identifier import FaceIdentifier
+from modules.face_identifier import FaceIdentifier
 from SettingsUI import SettingsUI
 
 cv2.ocl.setUseOpenCL(True)
@@ -17,7 +14,7 @@ class FaceRecApp(tk.Tk):
         super().__init__()
 
         self.face_detector = FaceDetector()
-        #self.face_identifier = FaceIdentifier()
+        self.face_identifier = FaceIdentifier()
 
         # Variables to keep track of whether the respective windows are open
         self._settings_window = False
@@ -127,8 +124,8 @@ class FaceRecApp(tk.Tk):
                     self.face_frame_arr = face_frame_arr
                     self.face_detected = True
 
-                    #name = self.face_identifier.identify_face(self._detected_face_img, face_locations, self.known_encodings, self.known_names)
-                    #self._name_label.config(text=f"Name: {name}")
+                    name = self.face_identifier.identify_face(self.face_frame_arr)
+                    self._name_label.config(text=f"Name: {name}")
                 elif not detected_face_frame and not self.face_detected:
                     self._face_label.configure(text="No close face detected")
                     self._name_label.configure(text="Name: ")
