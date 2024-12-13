@@ -17,8 +17,6 @@ class SettingsUI(tk.Toplevel):
         self.geometry("1200x600")
         self.configure(bg="#3c3d3c")
 
-        self.scroll_pending = False
-
         self.parent = parent
         self.settings_rows = []
         self.data = []
@@ -58,7 +56,6 @@ class SettingsUI(tk.Toplevel):
         add_user_button.pack(side="right", anchor="n", padx=75, pady=25)
     
     def update_scroll_region(self, event=None):
-        self.scroll_pending = False
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         canvas_width = self.canvas.winfo_width()
         table_width = self.table_frame.winfo_width()
@@ -128,6 +125,10 @@ class SettingsUI(tk.Toplevel):
         Populates known names and known encodings list with users that are already in the
         database.
         """
+        if not os.path.exists("data.json"):
+            with open("data.json", 'w') as file:
+                file.write("[]")
+
         with open("data.json", 'r') as file:
             self.data = json.load(file)
-        
+            

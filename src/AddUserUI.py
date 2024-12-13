@@ -58,7 +58,7 @@ class AddUserUI(tk.Toplevel):
         time.sleep(0.2)
         self.face_label.configure(text="No Face Detected")
 
-        _, detected_face_frame, _, _, face_frame_arr = self.detector.get_frame()
+        _, detected_face_frame, face_frame_arr = self.detector.get_frame()
         if detected_face_frame:
             self.face_img = detected_face_frame
             self.face_arr = face_frame_arr

@@ -4,6 +4,7 @@ import sys
 sys.path.append("/home/pi/.local/pipx/venvs/face-recognition/lib/python3.11/site-packages")
 import face_recognition
 import json
+import os
 
 
 class FaceIdentifier:
@@ -11,8 +12,13 @@ class FaceIdentifier:
         self.data = None
     
     def identify_face(self, frame):
+        if not os.path.exists("data.json"):
+            with open("data.json", 'w') as file:
+                file.write("[]")
+
         with open("data.json", 'r') as file:
             self.data = json.load(file)
+
         name = ""
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         try:

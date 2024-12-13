@@ -5,6 +5,7 @@ import time
 from modules.face_detector import FaceDetector
 from modules.face_identifier import FaceIdentifier
 from SettingsUI import SettingsUI
+import os
 
 cv2.ocl.setUseOpenCL(True)
 
@@ -19,8 +20,8 @@ class FaceRecApp(tk.Tk):
         # Variables to keep track of whether the respective windows are open
         self._settings_window = False
         self.settings = None
-        self._add_user_window = None
-        self._delete_user_window = None
+
+        os.makedirs("./faces", exist_ok=True)
 
         # The main window for the application
         self.title("Face Recognition App")
@@ -87,10 +88,7 @@ class FaceRecApp(tk.Tk):
         self.face_thread.start()
 
         # Variables to store detected face in image and numpy array formats
-        self.detected_face_img = None
         self.face_frame_arr = None
-
-        self.frame = None
         
     def quit_command(self) -> None:
         self.destroy()
@@ -101,7 +99,7 @@ class FaceRecApp(tk.Tk):
         while True:
             # Don't update if settings window is open to improve performance
             if not self._settings_window:
-                frame, _, _, _, _ = self.face_detector.get_frame()
+                frame, _, _ = self.face_detector.get_frame()
                 if frame:
                     self._video_label.configure(image=frame)
                     self._video_label.image = frame
@@ -115,21 +113,20 @@ class FaceRecApp(tk.Tk):
         while True:
             # Don't update if settings window is open to improve performance
             if not self._settings_window:
-                full_frame, detected_face_frame, frame, face_locations, face_frame_arr = self.face_detector.get_frame()
+                _, detected_face_frame, face_frame_arr = self.face_detector.get_frame()
+
                 if detected_face_frame and not self.face_detected:
-                    self.frame = frame
                     self._face_label.configure(image=detected_face_frame, text="")
                     self._face_label.image = detected_face_frame
-                    self.detected_face_img = detected_face_frame
                     self.face_frame_arr = face_frame_arr
                     self.face_detected = True
 
                     name = self.face_identifier.identify_face(self.face_frame_arr)
                     self._name_label.config(text=f"Name: {name}")
+
                 elif not detected_face_frame and not self.face_detected:
                     self._face_label.configure(text="No close face detected")
                     self._name_label.configure(text="Name: ")
-                    self.detected_face_img = None
                     self.face_frame_arr = None
                 
                 # Pause for 100 milliseconds before updating to reduce CPU usage.
